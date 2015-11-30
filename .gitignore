@@ -1,0 +1,12 @@
+/prof-*.gem
+/*.xml
+/*.pivotal
+/*.zip
+/.bundle
+/.idea
+/pkg
+/vendor/cache
+/*.png
+/*.html
+/.tags
+/.tags_sorted_by_file

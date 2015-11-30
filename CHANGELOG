@@ -1,0 +1,41 @@
+Version 0.13.0
+==============
+
+ - better errors on the installation page when rails 500 occurs
+
+Version 0.12.0
+==============
+
+ - Expose `#push_app_and_start`, `#remove_service_broker`, `#add_public_service_broker` on `CloudFoundry`
+ - Add `#cloud_foundry_uaa` to `Prof::Environment's`
+
+Version 0.11.4
+==============
+
+ - Ensure `Modal#present?` method can handle `Capybara::Poltergeist::ObsoleteNode` exceptions
+
+Version 0.11.3
+==============
+
+ - Switch modal confirm to use `sleep` instead of more exotic methods
+
+Version 0.11.2
+==============
+
+ - Ensure that `Apply Changes` is only clicked when there are pending changes on Ops Manager
+
+Version 0.11.1
+==============
+
+ - Increase timeout for modal confirm from 10 seconds to 60 seconds as PCF can take a long time to return
+ - Correct issues with injected Capybara session
+
+Version 0.11.0
+==============
+
+ - Allow Capybara session to be injected into `OpsManager` and `PcfDrinks`
+
+Version 0.10.0
+==============
+
+ - Expose `tile_configure` method on OpsManager

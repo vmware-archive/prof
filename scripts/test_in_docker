@@ -1,0 +1,11 @@
+#!/bin/bash
+set -ex
+
+gem install dock_it -s https://PhVBZyG_YDQYxZHE5aSp@gem.fury.io/me
+dock_it \
+  --with-bundler \
+  --remote-gems \
+  --logout  \
+  --image cflondonservices/london-services-ci-base:stable \
+  --ssh-key ${PRIVATE_KEY} \
+  --command 'rspec --format RspecJunitFormatter --out rspec.xml --format documentation'
