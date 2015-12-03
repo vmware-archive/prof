@@ -1,8 +1,8 @@
 PATH
   remote: .
   specs:
-    prof (0.29.0)
-      bosh_cli (~> 1.2534)
+    prof (0.29.2)
+      bosh_cli
       capybara
       capybara-webkit
       cf-uaa-lib (~> 3.2.0)
