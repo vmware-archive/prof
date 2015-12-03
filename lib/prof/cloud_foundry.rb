@@ -38,7 +38,8 @@ module Prof
                    :remove_service_broker,
                    :service_brokers,
                    :setup_permissive_security_group,
-                   :app_vcap_services
+                   :app_vcap_services,
+                   :marketplace
 
     def initialize(opts = {})
       @domain   = opts.fetch(:domain)
