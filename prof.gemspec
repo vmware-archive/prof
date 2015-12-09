@@ -15,11 +15,9 @@ Gem::Specification.new do |spec|
 
   spec.post_install_message = "Prof now requires qt5-qmake qt5-default libqt5webkit5-dev to be available. Any Dock It invocations should not use `bundle exec`, and instead install and invoke the dock_it gem directly"
 
-  spec.files         = Dir.glob('lib/**/*') + ['LICENSE']
+  spec.files         = Dir.glob('lib/**/*') + ['LEGAL']
   spec.executables   = spec.files.grep(/^bin\//) { |f| File.basename(f) }
   spec.require_paths = %w(lib)
-
-  spec.metadata['allowed_push_host'] = 'https://cf-london@git.fury.io'
 
   spec.add_development_dependency 'gem-release'
   spec.add_development_dependency 'gemfury', '>= 0.4.25'

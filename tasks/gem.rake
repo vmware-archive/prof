@@ -44,13 +44,7 @@ task push: :build do
 
   raise 'Could not find newly created gem!' unless new_gem
 
-  fury_cmd_parts = [
-    'fury',
-    'push',
-    new_gem
-  ]
-
-  sh(fury_cmd_parts.join(' '))
+  sh("gem push #{new_gem}")
 end
 
 task :rebase do
