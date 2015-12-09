@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    prof (0.29.2)
+    prof (0.29.3)
       bosh_cli
       capybara
       capybara-webkit
@@ -21,7 +21,6 @@ PATH
 
 GEM
   remote: https://rubygems.org/
-  remote: https://PhVBZyG_YDQYxZHE5aSp@gem.fury.io/me/
   specs:
     addressable (2.3.7)
     aws-sdk (1.60.2)
