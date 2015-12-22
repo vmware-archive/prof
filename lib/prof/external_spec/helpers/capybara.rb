@@ -22,7 +22,7 @@ module Prof
             raise StandardError.new("invalid driver")
           end
 
-          ::Capybara.default_wait_time = 60
+          ::Capybara.default_max_wait_time = 60
           ::Capybara.default_driver    = driver
           ::Capybara.javascript_driver = driver
 
