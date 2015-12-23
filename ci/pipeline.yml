@@ -1,0 +1,20 @@
+---
+resources:
+  - name: prof
+    type: git
+    source:
+      uri: https://github.com/pivotal-cf-experimental/prof
+      branch: master
+
+jobs:
+  - name: tests
+    plan:
+      - get: prof
+      - task: run-tests
+        config:
+          platform: linux
+          image: docker:///cflondonservices/london-services-ci-base#stable
+          inputs:
+            - name: prof
+          run:
+            path: prof/ci/tests.sh
