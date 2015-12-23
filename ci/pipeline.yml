@@ -10,6 +10,7 @@ jobs:
   - name: tests
     plan:
       - get: prof
+        trigger: true
       - task: run-tests
         config:
           platform: linux
