@@ -11,8 +11,7 @@
 require 'ostruct'
 
 require 'prof/ssl/check'
-
-require 'rspec/matchers/pretty'
+require 'rspec/matchers/english_phrasing'
 
 module Prof
   module Matchers
@@ -25,8 +24,6 @@ module Prof
     # 2. Some of the ciphers are actually expressions (kEDH+AESGCM) these need to be expanded to the ciphers they represent
 
     class OnlySupportSslWithCipherSet
-
-      include RSpec::Matchers::Pretty
 
       def initialize(cipher_set)
         @cipher_set = cipher_set
@@ -46,10 +43,10 @@ module Prof
 
       def failure_message
         [
-          ("The server is missing support for#{to_sentence server_missing_supported_ciphers}" if server_missing_supported_ciphers.any?),
-          ("The server supports#{to_sentence server_extra_ciphers} when it should not" if server_extra_ciphers.any?),
-          ("The server is missing support for#{to_sentence server_missing_supported_protocols}" if server_missing_supported_protocols.any?),
-          ("The server supports#{to_sentence server_extra_protocols} when it should not" if server_extra_protocols.any?),
+          ("The server is missing support for#{RSpec::Matchers::EnglishPhrasing.list(server_missing_supported_ciphers)}" if server_missing_supported_ciphers.any?),
+          ("The server supports#{RSpec::Matchers::EnglishPhrasing.list(server_extra_ciphers)} when it should not" if server_extra_ciphers.any?),
+          ("The server is missing support for#{RSpec::Matchers::EnglishPhrasing.list(server_missing_supported_protocols)}" if server_missing_supported_protocols.any?),
+           ("The server supports#{RSpec::Matchers::EnglishPhrasing.list(server_extra_protocols)} when it should not" if server_extra_protocols.any?),
           ("The server supports HTTP when it should not" if http_enabled)
         ].compact.join("\n")
       end

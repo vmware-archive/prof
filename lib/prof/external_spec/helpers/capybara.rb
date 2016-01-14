@@ -8,8 +8,6 @@
 # USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-require 'capybara/rspec'
-require 'capybara/query'
 require 'capybara/poltergeist'
 require 'capybara/webkit'
 

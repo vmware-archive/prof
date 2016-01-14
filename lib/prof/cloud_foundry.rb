@@ -1,4 +1,4 @@
-# Copyright (c) 2014-2015 Pivotal Software, Inc.
+# Copyright (c) 2014-2016 Pivotal Software, Inc.
 # All rights reserved.
 # THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 # INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
@@ -48,6 +48,14 @@ module Prof
       @password = opts.fetch(:password)
     end
 
+    def push_and_keep_app(app)
+      pushed_app_name = "cf-app-#{SecureRandom.hex(4)}"
+      deployed_app    = PushedTestApp.new(name: pushed_app_name, url: hula_cloud_foundry.url_for_app(pushed_app_name))
+
+      hula_cloud_foundry.push_app(app.path, deployed_app.name)
+      [deployed_app.name, deployed_app.url]
+    end
+
     def push_app(app, &_block)
       pushed_app_name = "cf-app-#{SecureRandom.hex(4)}"
       deployed_app    = PushedTestApp.new(name: pushed_app_name, url: hula_cloud_foundry.url_for_app(pushed_app_name))
@@ -80,6 +88,11 @@ module Prof
           yield pushed_app, service_instance
         end
       end
+    end
+
+    def bind_service_and_keep_running(pushed_app_name, service_instance_name)
+      hula_cloud_foundry.bind_app_to_service(pushed_app_name, service_instance_name)
+      hula_cloud_foundry.start_app(pushed_app_name)
     end
 
     def bind_service_and_run(pushed_app, service_instance, &_block)
@@ -118,6 +131,13 @@ module Prof
 
     def delete_service_key(service_instance, service_key)
       hula_cloud_foundry.delete_service_key(service_instance.name, service_key)
+    end
+
+    def provision_and_keep_service(service)
+      service_instance = ServiceInstance.new
+
+      hula_cloud_foundry.create_service_instance(service.name, service_instance.name, service.plan)
+      service_instance.name
     end
 
     def provision_service(service, &_block)

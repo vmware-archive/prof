@@ -38,7 +38,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'net-ssh-gateway'
   spec.add_dependency 'nokogiri'
   spec.add_dependency 'poltergeist'
-  spec.add_dependency 'rspec', '3.1'
+  spec.add_dependency 'rspec', '~> 3.3'
   spec.add_dependency 'rspec_junit_formatter'
   spec.add_dependency 'rubyzip', '~> 1.1'
   spec.add_dependency 'opsmanager_client', '~> 0.8'
