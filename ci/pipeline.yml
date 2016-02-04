@@ -6,16 +6,19 @@ resources:
       uri: https://github.com/pivotal-cf-experimental/prof
       branch: master
 
+  - name: time-24hours
+    type: time
+    source:
+      interval: 24h
+
 jobs:
   - name: tests
     plan:
-      - get: prof
-        trigger: true
+    - do:
+      - aggregate:
+        - get: prof
+          trigger: true
+        - get: time-24hours
+          trigger: true
       - task: run-tests
-        config:
-          platform: linux
-          image: docker:///cflondonservices/london-services-ci-base#stable
-          inputs:
-            - name: prof
-          run:
-            path: prof/ci/tests.sh
+        file: prof/ci/run-tests.yml
