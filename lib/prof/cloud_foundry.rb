@@ -151,6 +151,10 @@ module Prof
       hula_cloud_foundry.delete_service_instance_and_unbind(service_instance.name)
     end
 
+    def auth_token
+      hula_cloud_foundry.auth_token
+    end
+
     private
 
     def hula_cloud_foundry
