@@ -140,7 +140,7 @@ module Prof
       service_instance.name
     end
 
-    def provision_service(service, &_block)
+    def provision_service(service, options = {}, &_block)
       service_instance = ServiceInstance.new
 
       hula_cloud_foundry.create_service_instance(service.name, service_instance.name, service.plan)
@@ -148,7 +148,7 @@ module Prof
       yield service_instance if block_given?
 
     ensure
-      hula_cloud_foundry.delete_service_instance_and_unbind(service_instance.name)
+      hula_cloud_foundry.delete_service_instance_and_unbind(service_instance.name, options)
     end
 
     def auth_token
