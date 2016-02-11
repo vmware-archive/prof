@@ -104,6 +104,10 @@ module Prof
       hula_cloud_foundry.unbind_app_from_service(pushed_app.name, service_instance.name)
     end
 
+    def unbind_app_from_service(pushed_app, service_instance)
+      hula_cloud_foundry.unbind_app_from_service(pushed_app.name, service_instance.name)
+    end
+
     def provision_and_create_service_key(service, &_block)
       provision_service(service) do |service_instance|
         create_service_key(service_instance) do |service_key, service_key_data|
