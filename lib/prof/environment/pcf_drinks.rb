@@ -32,11 +32,11 @@ module Prof
         @ops_manager ||= OpsManager.new(ops_manager_config.merge(page: page))
       end
 
-      def cloud_foundry
+      def cloud_foundry(credentials_identifier="admin_credentials")
         @cloud_foundry ||= CloudFoundry.new(
           domain:   cloud_foundry_domain,
-          username: cloud_foundry_credentials.username,
-          password: cloud_foundry_credentials.password
+          username: cloud_foundry_credentials(credentials_identifier).username,
+          password: cloud_foundry_credentials(credentials_identifier).password
         )
       end
 
@@ -148,8 +148,8 @@ module Prof
                               .properties.fetch('director_credentials')
       end
 
-      def cloud_foundry_credentials
-        @cloud_foundry_credentials ||= ops_manager.cf_admin_credentials
+      def cloud_foundry_credentials(credentials_identifier)
+        @cloud_foundry_credentials ||= ops_manager.cf_uaa_credentials(credentials_identifier)
       end
     end
   end

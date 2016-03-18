@@ -37,6 +37,7 @@ module Prof
     def_delegators :opsmanager_client,
                    :cc_client_credentials,
                    :cf_admin_credentials,
+                   :cf_uaa_credentials,
                    :cf_installed?,
                    :delete_unused_products,
                    :system_domain,

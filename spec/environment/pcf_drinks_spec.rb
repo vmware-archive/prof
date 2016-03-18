@@ -44,6 +44,13 @@ describe Prof::Environment::PcfDrinks do
     )
   end
 
+  let(:cf_specific_credentials) {
+    OpenStruct.new(
+      :username=> "some-username",
+      :password=>"some-password",
+    )
+  }
+
   let(:ops_manager_instance) do
     instance_double(Prof::OpsManager)
   end
@@ -93,7 +100,7 @@ describe Prof::Environment::PcfDrinks do
     allow(Prof::OpsManagerLogFetcher).to receive(:new).and_return(log_fetcher_instance)
     allow(Prof::OpsManager).to receive(:new).and_return(ops_manager_instance)
     allow(Prof::CloudFoundry).to receive(:new).and_return(cloud_foundry_instance)
-    allow(ops_manager_instance).to receive(:cf_admin_credentials).and_return(cf_admin_credentials_instance)
+    allow(ops_manager_instance).to receive(:cf_uaa_credentials).and_return(cf_admin_credentials_instance)
     allow(ops_manager_instance).to receive(:opsmanager_client).and_return(opsmanager_client)
   end
 
@@ -137,7 +144,7 @@ describe Prof::Environment::PcfDrinks do
   end
 
   describe '#cloud_foundry' do
-    it 'provides a configured CloudFoundry object' do
+    it 'provides a default configured CloudFoundry object' do
       actual_cloud_foundry = pcf_drinks.cloud_foundry
 
       expect(Prof::CloudFoundry).to have_received(:new).with(
@@ -146,6 +153,23 @@ describe Prof::Environment::PcfDrinks do
         password: 'CF_PASSWORD'
       )
       expect(actual_cloud_foundry).to equal(cloud_foundry_instance)
+    end
+
+    context 'when a CloudFoundry object is configured to use a specified credentials identifier' do
+      before(:each) do
+        allow(ops_manager_instance).to receive(:cf_uaa_credentials).with("some_credential_identifier").and_return(cf_specific_credentials)
+      end
+
+      it 'obtains the corresponding credentials from opsmgr' do
+        actual_cloud_foundry = pcf_drinks.cloud_foundry("some_credential_identifier")
+
+        expect(Prof::CloudFoundry).to have_received(:new).with(
+          domain:   'CF_DOMAIN',
+          username: 'some-username',
+          password: 'some-password',
+        )
+        expect(actual_cloud_foundry).to equal(cloud_foundry_instance)
+      end
     end
   end
 
