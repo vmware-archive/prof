@@ -59,7 +59,7 @@ module Prof
           def sidebar(next_settings_name, &_block)
             return self if next_settings_name == current_setting_name
 
-            page.find('li a', text: /^\s*#{next_settings_name}\s*$/).click
+            page.find('.sidebar li a', text: /^\s*#{next_settings_name}\s*$/).click
 
             if block_given?
               yield page
