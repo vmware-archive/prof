@@ -19,7 +19,8 @@ describe Prof::Environment::PcfDrinks do
         some: 'config',
         url: 'http://foobar.com:9999',
         username: 'tempest user',
-        password: 'tempest password'
+        password: 'tempest password',
+        version: '1.6'
       },
       tempest_vm: {
         username: 'tempest vm user',

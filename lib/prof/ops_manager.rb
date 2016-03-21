@@ -21,12 +21,13 @@ module Prof
   class OpsManager
     extend Forwardable
 
-    def initialize(url:, username:, password:, page: default_capybara_session, log_fetcher: null_log_fetcher)
+    def initialize(url:, username:, password:, page: default_capybara_session, log_fetcher: null_log_fetcher, version: "1.6")
       @url         = url
       @username    = username
       @password    = password
       @page        = page
       @log_fetcher = log_fetcher
+      @version     = Gem::Version.new(version)
     end
 
     attr_reader :url
@@ -107,7 +108,7 @@ module Prof
 
     private
 
-    attr_reader :username, :password, :page, :log_fetcher
+    attr_reader :username, :password, :page, :log_fetcher, :version
 
     def default_capybara_session
       Capybara::Session.new(Capybara.default_driver)
@@ -126,7 +127,7 @@ module Prof
     end
 
     def login_page
-      @login_page ||= WebAppInternals::Page::Login.new(page: page, url: url, username: username, password: password)
+      @login_page ||= WebAppInternals::Page::Login.new(page: page, url: url, username: username, password: password, version: version)
     end
 
     def null_log_fetcher

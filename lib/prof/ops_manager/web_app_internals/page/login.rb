@@ -9,7 +9,6 @@
 #
 
 require 'uri'
-
 require 'prof/ops_manager/web_app_internals/page/dashboard'
 
 module Prof
@@ -17,11 +16,12 @@ module Prof
     class WebAppInternals
       module Page
         class Login
-          def initialize(page:, url:, username:, password:)
+          def initialize(page:, url:, username:, password:, version:)
             @page     = page
             @url      = url
             @username = username
             @password = password
+            @version  = version
 
             resp = page.visit login_url
 
@@ -32,19 +32,49 @@ module Prof
 
           def login
             puts "Logging into tempest at #{login_url}"
-            page.fill_in 'login[user_name]', with: username
-            page.fill_in 'login[password]', with: password
-            page.click_on 'login-action'
+            if login_via_uaa?
+              uaa_login
+            else
+              basic_login
+            end
 
             Dashboard.new(page: page)
           end
 
           private
 
-          attr_reader :page, :url, :username, :password
+          attr_reader :page, :url, :username, :password, :version
 
           def login_url
+            if login_via_uaa?
+              uaa_login_url
+            else
+              basic_login_url
+            end
+          end
+
+          def login_via_uaa?
+            version >= Gem::Version.new("1.7")
+          end
+
+          def uaa_login_url
+            URI.join(url, "uaa/login")
+          end
+
+          def basic_login_url
             URI.join(url, 'login')
+          end
+
+          def uaa_login
+            page.fill_in 'username', with: username
+            page.fill_in 'password', with: password
+            page.click_on 'Sign in'
+          end
+
+          def basic_login
+            page.fill_in 'login[user_name]', with: username
+            page.fill_in 'login[password]', with: password
+            page.click_on 'login-action'
           end
         end
       end
