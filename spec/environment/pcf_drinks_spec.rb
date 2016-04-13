@@ -11,53 +11,23 @@
 require 'spec_helper'
 require 'prof/environment/pcf_drinks'
 
-describe Prof::Environment::PcfDrinks do
+RSpec.describe Prof::Environment::PcfDrinks do
 
-  let!(:tempest_config) do
+  let(:tempest_config) do
     {
-      tempest: {
-        some: 'config',
-        url: 'http://foobar.com:9999',
-        username: 'tempest user',
-        password: 'tempest password',
-        version: '1.6'
+      'proxy' => {
+        'host' =>  'proxy.host',
+        'username' => 'USERNAME',
+        'password' => 'PASSWORD'
       },
-      tempest_vm: {
-        username: 'tempest vm user',
-        password: 'tempest vm password'
-      },
-      proxy: {
-        host: 'proxy.host',
-        username: 'USERNAME',
-        password: 'PASSWORD'
-      },
-      cloudfoundry: {
-        domain: 'CF_DOMAIN'
+      'cloudfoundry' => {
+        'domain' => 'CF_DOMAIN'
       }
     }
   end
 
-  let(:cf_admin_credentials_instance) do
-    double(
-      'cf_admin_credentials',
-      username: 'CF_USERNAME',
-      password: 'CF_PASSWORD'
-    )
-  end
-
-  let(:cf_specific_credentials) {
-    OpenStruct.new(
-      :username=> "some-username",
-      :password=>"some-password",
-    )
-  }
-
   let(:ops_manager_instance) do
     instance_double(Prof::OpsManager)
-  end
-
-  let(:opsmanager_client) do
-    instance_double(::OpsmanagerClient::Client)
   end
 
   let(:tempest_product) do
@@ -84,10 +54,6 @@ describe Prof::Environment::PcfDrinks do
     instance_double(Prof::CloudFoundry)
   end
 
-  let(:log_fetcher_instance) do
-    instance_double(Prof::OpsManagerLogFetcher)
-  end
-
   let(:ssh_gateway_instance) do
     instance_double(Prof::SshGateway)
   end
@@ -98,11 +64,7 @@ describe Prof::Environment::PcfDrinks do
 
   before do
     allow(Prof::SshGateway).to receive(:new).and_return(ssh_gateway_instance)
-    allow(Prof::OpsManagerLogFetcher).to receive(:new).and_return(log_fetcher_instance)
-    allow(Prof::OpsManager).to receive(:new).and_return(ops_manager_instance)
-    allow(Prof::CloudFoundry).to receive(:new).and_return(cloud_foundry_instance)
-    allow(ops_manager_instance).to receive(:cf_uaa_credentials).and_return(cf_admin_credentials_instance)
-    allow(ops_manager_instance).to receive(:opsmanager_client).and_return(opsmanager_client)
+    stub_const('ENV', {'TEMPEST_ENVIRONMENT' => 'environment_name', 'OM_VERSION' => '42'})
   end
 
   describe '#ssh_gateway' do
@@ -119,7 +81,7 @@ describe Prof::Environment::PcfDrinks do
     end
     context 'when the key is specified in the config' do
       before(:each) do
-        tempest_config[:proxy].merge!(ssh_key: 'some-key-value')
+        tempest_config['proxy']['ssh_key'] = 'some-key-value'
       end
 
       it 'provides a configured SshGateway object with key' do
@@ -135,81 +97,34 @@ describe Prof::Environment::PcfDrinks do
    end
 
   describe '#ops_manager' do
-    it 'provides a configured OpsManager object' do
-      actual_ops_manager = pcf_drinks.ops_manager
-      expected_config = tempest_config.fetch(:tempest).merge(page: an_instance_of(Capybara::Session))
-
-      expect(Prof::OpsManager).to have_received(:new).with(expected_config)
-      expect(actual_ops_manager).to equal(ops_manager_instance)
+    it 'builds new object using TEMPEST_ENVIRONMENT and OM_VERSION settings' do
+      expect(Prof::OpsManager).to receive(:new).with(
+        environment_name: 'environment_name', version: '42'
+      )
+      pcf_drinks.ops_manager
     end
   end
 
   describe '#cloud_foundry' do
-    it 'provides a default configured CloudFoundry object' do
-      actual_cloud_foundry = pcf_drinks.cloud_foundry
+    let(:cf_admin_credentials_instance) do
+      OpenStruct.new(
+        username: 'CF_USERNAME',
+        password: 'CF_PASSWORD'
+      )
+    end
 
-      expect(Prof::CloudFoundry).to have_received(:new).with(
+    before(:each) do
+      allow(Prof::OpsManager).to receive(:new).and_return(ops_manager_instance)
+      allow(ops_manager_instance).to receive(:cf_admin_credentials).and_return(cf_admin_credentials_instance)
+    end
+
+    it 'provides a configured CloudFoundry object' do
+      expect(Prof::CloudFoundry).to receive(:new).with(
         domain:   'CF_DOMAIN',
         username: 'CF_USERNAME',
         password: 'CF_PASSWORD'
       )
-      expect(actual_cloud_foundry).to equal(cloud_foundry_instance)
-    end
-
-    context 'when a CloudFoundry object is configured to use a specified credentials identifier' do
-      before(:each) do
-        allow(ops_manager_instance).to receive(:cf_uaa_credentials).with("some_credential_identifier").and_return(cf_specific_credentials)
-      end
-
-      it 'obtains the corresponding credentials from opsmgr' do
-        actual_cloud_foundry = pcf_drinks.cloud_foundry("some_credential_identifier")
-
-        expect(Prof::CloudFoundry).to have_received(:new).with(
-          domain:   'CF_DOMAIN',
-          username: 'some-username',
-          password: 'some-password',
-        )
-        expect(actual_cloud_foundry).to equal(cloud_foundry_instance)
-      end
+      pcf_drinks.cloud_foundry
     end
   end
-
-  describe '#bosh_product' do
-    context 'when OpsMan uses microbosh for the bosh product guid' do
-      before(:each) do
-        allow(opsmanager_client).to receive(:product).with('microbosh').and_return(tempest_product)
-      end
-
-      it 'returns the correct product' do
-        product = pcf_drinks.send(:bosh_product)
-        expect(product).to equal(tempest_product)
-      end
-    end
-
-    context 'when OpsMan uses p-bosh for the bosh product guid' do
-      before(:each) do
-        allow(opsmanager_client).to receive(:product).with('microbosh').and_return(nil)
-        allow(opsmanager_client).to receive(:product).with('p-bosh').and_return(tempest_product)
-      end
-
-      it 'returns the correct product' do
-        product = pcf_drinks.send(:bosh_product)
-        expect(product).to equal(tempest_product)
-      end
-    end
-  end
-
-  describe '#bosh_credentials' do
-    before(:each) do
-      allow(pcf_drinks).to receive(:bosh_product).and_return(tempest_product)
-      allow(tempest_product).to receive(:job_of_type).with('director').and_return(tempest_job)
-      allow(tempest_job).to receive(:properties).and_return(tempest_job_properties)
-    end
-
-    it 'returns the credentials for bosh' do
-      credentials = pcf_drinks.send(:bosh_credentials)
-      expect(credentials).to equal(tempest_bosh_credentials)
-    end
-  end
-
 end

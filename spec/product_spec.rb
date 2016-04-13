@@ -11,7 +11,7 @@
 require 'spec_helper'
 require 'prof/product'
 
-describe Prof::Product do
+RSpec.describe Prof::Product do
 
   let(:path) { 'spec/assets/file.pivotal' }
 

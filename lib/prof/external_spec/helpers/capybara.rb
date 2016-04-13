@@ -24,6 +24,7 @@ module Prof
           ::Capybara.default_driver    = driver
           ::Capybara.javascript_driver = driver
 
+
           ::Capybara.register_driver :poltergeist do |app|
             ::Capybara::Poltergeist::Driver.new(
               app,
@@ -37,6 +38,10 @@ module Prof
           end
 
           ::Capybara.register_driver :webkit do |app|
+            ::Capybara::Webkit.configure do |config|
+              config.block_unknown_urls
+            end
+
             ::Capybara::Webkit::Driver.new(app).tap do |d|
               d.browser.ignore_ssl_errors
               d.browser.allow_url('*')

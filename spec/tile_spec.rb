@@ -10,7 +10,7 @@
 
 require 'prof/tile'
 
-describe Prof::Tile do
+RSpec.describe Prof::Tile do
   let(:name) { 'NAME' }
   let(:version) { 'VERSION' }
 

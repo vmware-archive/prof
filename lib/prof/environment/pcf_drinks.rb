@@ -14,7 +14,6 @@ require 'capybara'
 
 require 'prof/cloud_foundry'
 require 'prof/ops_manager'
-require 'prof/ops_manager_log_fetcher'
 require 'prof/ssh_gateway'
 require 'prof/uaa_client'
 
@@ -23,41 +22,40 @@ module Prof
     class NoDirectorVm < StandardError; end
 
     class PcfDrinks
-      def initialize(tempest_config, page: default_capybara_session)
+      def initialize(tempest_config)
         @tempest_config = tempest_config
-        @page           = page
       end
 
       def ops_manager
-        @ops_manager ||= OpsManager.new(ops_manager_config.merge(page: page))
+        @ops_manager ||= OpsManager.new(environment_name: ENV.fetch('TEMPEST_ENVIRONMENT'), version: ENV.fetch('OM_VERSION'))
       end
 
-      def cloud_foundry(credentials_identifier="admin_credentials")
+      def cloud_foundry
         @cloud_foundry ||= CloudFoundry.new(
           domain:   cloud_foundry_domain,
-          username: cloud_foundry_credentials(credentials_identifier).username,
-          password: cloud_foundry_credentials(credentials_identifier).password
+          username: ops_manager.cf_admin_credentials.username,
+          password: ops_manager.cf_admin_credentials.password
         )
       end
 
       def cloud_foundry_domain
-        tempest_config.fetch(:cloudfoundry).fetch(:domain)
+        tempest_config.fetch('cloudfoundry').fetch('domain')
       end
 
       def bosh_director
         @bosh_director ||= Hula::BoshDirector.new(
           target_url:  bosh_director_url,
-          username:    bosh_credentials.fetch('identity'),
+          username:    ops_manager.bosh_credentials.fetch('identity'),
           password:    bosh_credentials.fetch('password')
         )
       end
 
       def ssh_gateway
         SshGateway.new(
-          gateway_host:     ssh_gateway_config.fetch(:host),
-          gateway_username: ssh_gateway_config.fetch(:username),
-          gateway_password: ssh_gateway_config[:password],
-          ssh_key:          ssh_gateway_config[:ssh_key]
+          gateway_host:     ssh_gateway_config.fetch('host'),
+          gateway_username: ssh_gateway_config.fetch('username'),
+          gateway_password: ssh_gateway_config['password'],
+          ssh_key:          ssh_gateway_config['ssh_key']
         )
       end
 
@@ -75,15 +73,6 @@ module Prof
 
       def default_capybara_session
         Capybara::Session.new(Capybara.default_driver)
-      end
-
-      def log_fetcher
-        OpsManagerLogFetcher.new(
-          ssh_gateway: ssh_gateway,
-          host:        ops_manager_hostname,
-          username:    ops_manager_vm_config.fetch(:username),
-          password:    ops_manager_vm_config.fetch(:password)
-        )
       end
 
       def cloud_controller_client_credentials
@@ -109,47 +98,24 @@ module Prof
       end
 
       def ops_manager_hostname
-        URI.parse(ops_manager_config.fetch(:url)).hostname
+        URI.parse(ops_manager_config.fetch('url')).hostname
       end
 
       def ops_manager_config
-        tempest_config.fetch(:tempest)
-      end
-
-      def ops_manager_vm_config
-        tempest_config.fetch(:tempest_vm)
+        tempest_config.fetch('tempest')
       end
 
       def ssh_gateway_config
-        tempest_config.fetch(:proxy)
+        tempest_config.fetch('proxy')
       end
 
-      def bosh_director_url
-        return URI("https://127.0.0.1:#{forwarded_bosh_port}").to_s if !tempest_config[:proxy].nil?
+      def bosh_director_urlo
+        return URI("https://127.0.0.1:#{forwarded_bosh_port}").to_s if !tempest_config['proxy'].nil?
         return director.hostname
       end
 
-      def bosh_product
-        # old versions of OpsMan (< v1.6 RC4)
-        @bosh_product ||= ops_manager
-                          .send(:opsmanager_client)
-                          .send(:product, 'microbosh')
-
-        # newer versions of OpsMan (>= v1.6 RC4)
-        @bosh_product ||= ops_manager
-                          .send(:opsmanager_client)
-                          .send(:product, 'p-bosh')
-      end
-
       def bosh_credentials
-        # TODO: push this code into ops manager
-        @bosh_credentials ||= bosh_product
-                              .job_of_type('director')
-                              .properties.fetch('director_credentials')
-      end
-
-      def cloud_foundry_credentials(credentials_identifier)
-        @cloud_foundry_credentials ||= ops_manager.cf_uaa_credentials(credentials_identifier)
+        @bosh_credentials = ops_manager.bosh_credentials
       end
     end
   end

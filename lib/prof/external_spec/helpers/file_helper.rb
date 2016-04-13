@@ -14,20 +14,14 @@ module Prof
   module ExternalSpec
     module Helpers
       module FileHelper
-        def root_path
-          defined?(ROOT_PATH) ? ROOT_PATH : Dir.pwd
-        end
 
         def file_path(relative_to_root)
-          File.expand_path(relative_to_root, root_path)
+          root_path = defined?(ROOT_PATH) ? ROOT_PATH : Dir.pwd
+          File.expand_path(relative_to_root, )
         end
 
         def json_contents(relative_to_root)
-          JSON.parse(file_contents(relative_to_root), symbolize_names: true)
-        end
-
-        def file_contents(relative_to_root)
-          File.read(file_path(relative_to_root))
+          raise 'Please use YAML.load_file() instead. See example in p-rabbitmq'
         end
       end
     end

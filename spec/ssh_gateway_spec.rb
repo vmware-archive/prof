@@ -12,7 +12,7 @@ require 'spec_helper'
 require 'net/ssh/gateway'
 require 'prof/ssh_gateway'
 
-describe Prof::SshGateway do
+RSpec.describe Prof::SshGateway do
   let(:ssh_key) do
     nil
   end

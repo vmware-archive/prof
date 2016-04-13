@@ -11,7 +11,7 @@
 require 'spec_helper'
 require 'prof/ssl/check'
 
-describe Prof::SSL::Check do
+RSpec.describe Prof::SSL::Check do
   describe '#check' do
     let(:url) { 'https://foobar.com:8443/' }
     let(:http) { instance_double(Net::HTTP) }

@@ -13,7 +13,7 @@ require 'prof/matchers/metadata'
 
 # expect(manifest).to have_metadata_version
 
-describe "Metadata Matchers" do
+RSpec.describe "Metadata Matchers" do
 
   subject(:manifest) do
     {

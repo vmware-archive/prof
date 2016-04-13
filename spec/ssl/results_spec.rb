@@ -13,7 +13,7 @@ require 'prof/ssl/cipher_set'
 require 'prof/ssl/results'
 require 'prof/ssl/result'
 
-describe Prof::SSL::Results do
+RSpec.describe Prof::SSL::Results do
 
   subject(:ssl_results) { described_class.new(results) }
 

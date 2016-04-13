@@ -1,0 +1,344 @@
+{
+  "guid": "25ada88fbd4d3d8965c0",
+  "installation_schema_version": "1.7",
+  "ip_assignments": {
+    "assignments": {
+      "p-rabbitmq-d58f9b07fc7f6fb71e9e": {
+        "rabbitmq-server-d4c33236472d9584d3a7": {
+          "52e5bb33886d4f30fd04": [
+            "10.85.48.137",
+            "10.85.48.138"
+          ]
+        }
+      }
+    }
+  },
+  "products": [
+    {
+      "guid": "p-bosh-1d88848ec73d42f67a9d",
+      "identifier": "p-bosh",
+      "installation_name": "p-bosh-1d88848ec73d42f67a9d",
+      "product_version": "1.7.0.0",
+      "jobs": [
+        {
+          "guid": "director-7c94327572412514224d",
+          "installation_name": "director",
+          "identifier": "director",
+          "properties": [
+            {
+              "value": {
+                "identity": "vcap",
+                "password": "vcap_password"
+              },
+              "identifier": "agent_credentials"
+            },
+            {
+              "value": {
+                "identity": "registry",
+                "password": "registry_password"
+              },
+              "identifier": "registry_credentials"
+            },
+            {
+              "value": {
+                "identity": "director",
+                "password": "director_password"
+              },
+              "identifier": "director_credentials"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "guid": "cf-ffb989a60a9f71ffb6fc",
+      "installation_name": "cf-ffb989a60a9f71ffb6fc",
+      "product_version": "1.7.0.0",
+      "singleton_availability_zone_reference": "52e5bb33886d4f30fd04",
+      "jobs": [
+        {
+          "guid": "cloud_controller-db647a43c81dff344bfb",
+          "installation_name": "cloud_controller",
+          "properties": [
+            {
+              "value": "cf-system-domain",
+              "identifier": "system_domain"
+            },
+            {
+              "value": "cf-app-domain",
+              "identifier": "apps_domain"
+            }
+          ],
+          "instance": {
+            "identifier": "instances"
+          },
+          "identifier": "cloud_controller"
+        },
+        {
+          "guid": "uaa-a3fb4b78b6f165bbcba6",
+          "installation_name": "uaa",
+          "properties": [
+            {
+              "value": {
+                "identity": "username",
+                "password": "not_uaa-password"
+              },
+              "identifier": "non_admin_credentials"
+            },
+            {
+              "value": {
+                "identity": "username",
+                "password": "uaa-password"
+              },
+              "identifier": "admin_credentials"
+            }
+          ],
+          "instance": {
+            "identifier": "instances"
+          },
+          "vm_credentials": {
+            "identity": "vcap",
+            "salt": "super-secret-vm-salt",
+            "password": "super-secret-vm-password"
+          },
+          "identifier": "uaa"
+        }
+      ],
+      "properties": [
+      ],
+      "identifier": "cf"
+    },
+    {
+      "guid": "p-rabbitmq-d58f9b07fc7f6fb71e9e",
+      "installation_name": "p-rabbitmq-d58f9b07fc7f6fb71e9e",
+      "product_version": "1.6.0.alpha.408.9886bd7",
+      "singleton_availability_zone_reference": "52e5bb33886d4f30fd04",
+      "network_reference": "9dc227667312eb0593f1",
+      "availability_zone_references": [
+        "52e5bb33886d4f30fd04"
+      ],
+      "applied_data_migrations": [
+        "201603090000_migration_to_1.6.js",
+        "201603161628_update_rsa_certificates.js"
+      ],
+      "prepared": true,
+      "stemcell": {
+        "infrastructure": "vsphere",
+        "hypervisor": "esxi",
+        "os": "ubuntu-trusty",
+        "version": "3160",
+        "file": "bosh-stemcell-3160-vsphere-esxi-ubuntu-trusty-go_agent.tgz",
+        "name": "bosh-vsphere-esxi-ubuntu-trusty-go_agent"
+      },
+      "jobs": [
+        {
+          "guid": "rabbitmq-server-d4c33236472d9584d3a7",
+          "installation_name": "rabbitmq-server",
+          "vm_type_id": "small",
+          "properties": [
+            {
+              "value": {
+                "identity": "username",
+                "password": "password"
+              },
+              "identifier": "server_admin_credentials"
+            },
+            {
+              "value": {
+                "identity": "broker",
+                "salt": "super-secret-broker-salt",
+                "password": "super-secret-broker-password"
+              },
+              "identifier": "service_broker_rabbitmq_admin_credentials"
+            },
+            {
+              "value": [
+                "rabbitmq_management",
+                "rabbitmq_mqtt",
+                "rabbitmq_stomp"
+              ],
+              "identifier": "plugins"
+            },
+            {
+              "identifier": "cookie"
+            },
+            {
+              "identifier": "config"
+            },
+            {
+              "value": [
+                "enable_tls1_0"
+              ],
+              "identifier": "security_options"
+            }
+          ],
+          "instance": {
+            "identifier": "instances"
+          },
+          "vm_credentials": {
+            "identity": "vcap",
+            "salt": "super-secret-vm-salt",
+            "password": "super-secret-vm-password"
+          },
+          "partitions": [
+            {
+              "job_reference": "rabbitmq-server-d4c33236472d9584d3a7",
+              "installation_name": "rabbitmq-server-partition-52e5bb33886d4f30fd04",
+              "instance_count": 2,
+              "availability_zone_reference": "52e5bb33886d4f30fd04"
+            }
+          ],
+          "identifier": "rabbitmq-server"
+        },
+        {
+          "guid": "rabbitmq-haproxy-663072f2131ce36d665e",
+          "installation_name": "rabbitmq-haproxy",
+          "properties": [
+            {
+              "value": "15672, 5672, 5671, 1883, 8883, 61613, 61614, 15674",
+              "identifier": "ports"
+            },
+            {
+              "value": {
+                "identity": "admin",
+                "salt": "super-secret-stats_dashboard-salt",
+                "password": "super-secret-stats_dashboard-password"
+              },
+              "identifier": "stats_dashboard"
+            }
+          ],
+          "instance": {
+            "identifier": "instances"
+          },
+          "vm_credentials": {
+            "identity": "vcap",
+            "salt": "super-secret-vm-salt",
+            "password": "super-secret-vm-password"
+          },
+          "partitions": [
+            {
+              "job_reference": "rabbitmq-haproxy-663072f2131ce36d665e",
+              "installation_name": "rabbitmq-haproxy-partition-52e5bb33886d4f30fd04",
+              "instance_count": 1,
+              "availability_zone_reference": "52e5bb33886d4f30fd04"
+            }
+          ],
+          "identifier": "rabbitmq-haproxy"
+        },
+        {
+          "guid": "rabbitmq-broker-1012fe8cc1a745a7a43e",
+          "installation_name": "rabbitmq-broker",
+          "properties": [
+            {
+              "value": {
+                "identity": "username",
+                "password": "password"
+              },
+              "identifier": "broker_http_auth_credentials"
+            },
+            {
+              "identifier": "dns_host"
+            },
+            {
+              "value": true,
+              "identifier": "operator_set_policy_enabled"
+            },
+            {
+              "value": "{\"ha-mode\": \"exactly\", \"ha-params\": 2, \"ha-sync-mode\": \"automatic\"}\n",
+              "identifier": "policy_definition"
+            }
+          ],
+          "instance": {
+            "identifier": "instances"
+          },
+          "vm_credentials": {
+            "identity": "vcap",
+            "salt": "super-secret-vm-salt",
+            "password": "super-secret-vm-password"
+          },
+          "partitions": [
+            {
+              "job_reference": "rabbitmq-broker-1012fe8cc1a745a7a43e",
+              "installation_name": "rabbitmq-broker-partition-52e5bb33886d4f30fd04",
+              "instance_count": 1,
+              "availability_zone_reference": "52e5bb33886d4f30fd04"
+            }
+          ],
+          "identifier": "rabbitmq-broker"
+        },
+        {
+          "guid": "compilation-16cd289c8ffe51ae6ffb",
+          "installation_name": "compilation",
+          "instance": {
+            "identifier": "instances"
+          },
+          "vm_credentials": {
+            "identity": "vcap",
+            "salt": "super-secret-vm-salt",
+            "password": "super-secret-vm-password"
+          },
+          "partitions": [
+            {
+              "job_reference": "compilation-16cd289c8ffe51ae6ffb",
+              "installation_name": "compilation-partition-52e5bb33886d4f30fd04",
+              "instance_count": 2,
+              "availability_zone_reference": "52e5bb33886d4f30fd04"
+            }
+          ],
+          "identifier": "compilation"
+        },
+        {
+          "guid": "broker-registrar-91a15e38acfd996d2aea",
+          "installation_name": "broker-registrar",
+          "instance": {
+            "identifier": "instances"
+          },
+          "vm_credentials": {
+            "identity": "vcap",
+            "salt": "super-secret-vm-salt",
+            "password": "super-secret-vm-password"
+          },
+          "partitions": [
+            {
+              "job_reference": "broker-registrar-91a15e38acfd996d2aea",
+              "installation_name": "broker-registrar",
+              "instance_count": 1,
+              "availability_zone_reference": "52e5bb33886d4f30fd04"
+            }
+          ],
+          "identifier": "broker-registrar"
+        },
+        {
+          "guid": "broker-deregistrar-53221c1426877dbabd07",
+          "installation_name": "broker-deregistrar",
+          "instance": {
+            "identifier": "instances"
+          },
+          "vm_credentials": {
+            "identity": "vcap",
+            "salt": "super-secret-vm-salt",
+            "password": "super-secret-vm-password"
+          },
+          "partitions": [
+            {
+              "job_reference": "broker-deregistrar-53221c1426877dbabd07",
+              "installation_name": "broker-deregistrar",
+              "instance_count": 1,
+              "availability_zone_reference": "52e5bb33886d4f30fd04"
+            }
+          ],
+          "identifier": "broker-deregistrar"
+        }
+      ],
+      "properties": [
+        {
+          "identifier": "syslog_address"
+        },
+        {
+          "identifier": "syslog_port"
+        }
+      ],
+      "identifier": "p-rabbitmq"
+    }
+  ]
+}

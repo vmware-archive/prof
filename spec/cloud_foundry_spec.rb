@@ -11,7 +11,7 @@
 require 'spec_helper'
 require 'prof/cloud_foundry'
 
-describe Prof::CloudFoundry do
+RSpec.describe Prof::CloudFoundry do
 
   subject(:cloud_foundry) {described_class.new(
       domain:   "somedomain.com",

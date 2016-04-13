@@ -41,5 +41,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'rspec', '~> 3.3'
   spec.add_dependency 'rspec_junit_formatter'
   spec.add_dependency 'rubyzip', '~> 1.1'
-  spec.add_dependency 'opsmanager_client', '~> 0.8.5'
+  spec.add_dependency 'opsmgr', '~> 0.34.17'
 end
