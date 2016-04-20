@@ -1,0 +1,207 @@
+{
+  "guid": "779ab075f8d062700ca7",
+  "installation_schema_version": "1.6",
+  "products": [
+    {
+      "guid": "p-bosh-e1d36d7d77e6b2d0e9d2",
+      "installation_name": "p-bosh-e1d36d7d77e6b2d0e9d2",
+      "product_version": "1.6.7.0",
+      "singleton_availability_zone_reference": "6cfc2b7279b6da3e7f7c",
+      "jobs": [
+        {
+          "guid": "director-ec397e7b534832220e19",
+          "installation_name": "director",
+          "instance_type_id": "c4.large",
+          "properties": [
+            {
+              "value": {
+                "identity": "director",
+                "password": "director_password"
+              },
+              "identifier": "director_credentials"
+            },
+            {
+              "value": {
+                "identity": "nats",
+                "password": "nats_credentials"
+              },
+              "identifier": "nats_credentials"
+            }
+          ],
+          "instances": [
+            {
+              "value": 1,
+              "identifier": "instances"
+            }
+          ],
+          "identifier": "director"
+        }
+      ],
+      "infrastructure_network_reference": "e3fe72ae2fb3866a5901",
+      "deployment_network_reference": "e3fe72ae2fb3866a5901",
+      "identifier": "p-bosh"
+    },
+    {
+      "guid": "cf-fccc4c81a400d8c40825",
+      "installation_name": "cf-fccc4c81a400d8c40825",
+      "product_version": "1.6.11-build.5",
+      "singleton_availability_zone_reference": "6cfc2b7279b6da3e7f7c",
+      "network_reference": "e3fe72ae2fb3866a5901",
+      "availability_zone_references": [
+        "6cfc2b7279b6da3e7f7c"
+      ],
+      "jobs": [
+        {
+          "guid": "cloud_controller-30b40656270d95b891bc",
+          "installation_name": "cloud_controller",
+          "instance_type_id": "m3.large",
+          "properties": [
+            {
+              "value": "cf-system-domain",
+              "identifier": "system_domain"
+            },
+            {
+              "value": "frappe.london.cf-app.com",
+              "identifier": "apps_domain"
+            },
+            {
+              "value": 10240,
+              "identifier": "default_quota_memory_limit_mb"
+            },
+            {
+              "value": 100,
+              "identifier": "default_quota_max_number_services"
+            },
+            {
+              "value": true,
+              "identifier": "default_to_diego_backend"
+            },
+            {
+              "value": true,
+              "identifier": "allow_app_ssh_access"
+            }
+          ],
+          "instances": [
+            {
+              "value": 1,
+              "identifier": "instances"
+            }
+          ],
+          "identifier": "cloud_controller"
+        },
+        {
+          "guid": "uaa-5565010bc5a106138d7e",
+          "installation_name": "uaa",
+          "instance_type_id": "t2.micro",
+          "properties": [
+            {
+              "value": {
+                "identity": "admin",
+                "password": "uaa-password"
+              },
+              "identifier": "admin_credentials"
+            },
+            {
+              "value": {
+                "identity": "push_apps_manager",
+                "password": "push_ups"
+              },
+              "identifier": "push_apps_manager_credentials"
+            }
+          ],
+          "identifier": "uaa"
+        }
+      ],
+      "identifier": "cf"
+    },
+    {
+      "guid": "p-rabbitmq-b162a0e631fdf6720fba",
+      "installation_name": "p-rabbitmq-b162a0e631fdf6720fba",
+      "product_version": "1.5.8",
+      "singleton_availability_zone_reference": "6cfc2b7279b6da3e7f7c",
+      "network_reference": "e3fe72ae2fb3866a5901",
+      "availability_zone_references": [
+        "6cfc2b7279b6da3e7f7c"
+      ],
+      "ips": {
+        "rabbitmq-server-d34c1595faaa0911dede-partition-6cfc2b7279b6da3e7f7c": [
+          "10.85.48.137",
+          "10.0.16.57"
+        ],
+        "rabbitmq-haproxy-c50a3bdc2c4c5579cfe4-partition-6cfc2b7279b6da3e7f7c": [
+          "10.0.16.58"
+        ],
+        "rabbitmq-broker-90e582fe0478f19b42d4-partition-6cfc2b7279b6da3e7f7c": [
+          "10.0.16.59"
+        ],
+        "compilation-24c93b8e6a3853dafe2c-partition-6cfc2b7279b6da3e7f7c": [
+          "10.0.16.60",
+          "10.0.16.61"
+        ],
+        "broker-registrar-31066a174ba0227f380f-partition-6cfc2b7279b6da3e7f7c": [
+          "10.0.16.62"
+        ],
+        "broker-deregistrar-028691e43efb954c80e7-partition-6cfc2b7279b6da3e7f7c": [
+          "10.0.16.63"
+        ],
+        "dynamic_for_static": [
+          "10.0.16.64",
+          "10.0.16.65",
+          "10.0.16.66",
+          "10.0.16.67"
+        ]
+      },
+      "prepared": true,
+      "stemcell": {
+        "infrastructure": "aws",
+        "hypervisor": "xen-hvm",
+        "os": "ubuntu-trusty",
+        "version": "3146.10",
+        "file": "light-bosh-stemcell-3146.10-aws-xen-hvm-ubuntu-trusty-go_agent.tgz",
+        "name": "bosh-aws-xen-hvm-ubuntu-trusty-go_agent"
+      },
+      "jobs": [
+        {
+          "guid": "rabbitmq-server-d34c1595faaa0911dede",
+          "installation_name": "rabbitmq-server",
+          "instance_type_id": "r3.large",
+          "properties": [
+            {
+              "value": {
+                "identity": "vcap",
+                "salt": "salt",
+                "password": "super-secret-vm-password"
+              },
+              "identifier": "vm_credentials"
+            },
+            {
+              "value": {
+                "identity": "admin",
+                "password": "password"
+              },
+              "identifier": "server_admin_credentials"
+            },
+            {
+              "value": [
+                "rabbitmq_management",
+                "rabbitmq_mqtt",
+                "rabbitmq_stomp"
+              ],
+              "identifier": "plugins"
+            }
+          ],
+          "identifier": "rabbitmq-server"
+        }
+      ],
+      "properties": [
+        {
+          "identifier": "syslog_address"
+        },
+        {
+          "identifier": "syslog_port"
+        }
+      ],
+      "identifier": "p-rabbitmq"
+    }
+  ]
+}

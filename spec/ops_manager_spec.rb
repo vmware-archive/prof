@@ -12,8 +12,7 @@ require 'spec_helper'
 require 'prof/ops_manager'
 
 RSpec.describe Prof::OpsManager do
-
-  let(:opsmanager) { described_class.new(environment_name: "test", version: "1.7") }
+  let(:opsmanager) { described_class.new(environment_name: "test", version: version) }
   let(:test_env) do
     instance_double(
       Opsmgr::Environments,
@@ -30,31 +29,69 @@ RSpec.describe Prof::OpsManager do
 
   before(:each) do
     allow(Opsmgr::Environments).to receive(:for).and_return(test_env)
-    fake_response = JSON.parse(File.read(File.expand_path(File.join(__dir__, 'assets', 'installation_settings.json'))))
-    installation_settings_object = Opsmgr::Api::InstallationSettingsResult.new(fake_response)
     allow_any_instance_of(Opsmgr::Api::Client).to receive(:installation_settings).and_return(installation_settings_object)
   end
 
-  it "#cf_admin_credentials" do
-    credentials = opsmanager.cf_admin_credentials
-    expect(credentials.username).to eq("admin")
-    expect(credentials.password).to eq("uaa-password")
+  context 'for 1.7 OpsManager' do
+    let(:version) { '1.7' }
+    let(:installation_settings_object) do
+      fake_response = JSON.parse(File.read(File.expand_path(File.join(__dir__, 'assets', 'installation_settings.json'))))
+      Opsmgr::Api::InstallationSettingsResult.new(fake_response)
+    end
+
+    it "#cf_admin_credentials" do
+      credentials = opsmanager.cf_admin_credentials
+      expect(credentials.username).to eq("admin")
+      expect(credentials.password).to eq("uaa-password")
+    end
+
+    it "#system_domain" do
+      expect(opsmanager.system_domain).to eq("cf-system-domain")
+    end
+
+    it "#vms_for_job_type" do
+      vms = opsmanager.vms_for_job_type('rabbitmq-server')
+      expect(vms.first.hostname).to eq("10.85.48.137")
+      expect(vms.first.username).to eq("vcap")
+      expect(vms.first.password).to eq("super-secret-vm-password")
+    end
+
+    it '#bosh_credentials' do
+      credentials = opsmanager.bosh_credentials
+      expect(credentials['identity']).to eq 'director'
+      expect(credentials['password']).to eq 'director_password'
+    end
   end
 
-  it "#system_domain" do
-    expect(opsmanager.system_domain).to eq("cf-system-domain")
-  end
+  context 'for 1.6 OpsManager' do
+    let(:version) { '1.6' }
+    let(:installation_settings_object) do
+      fake_response = JSON.parse(File.read(File.expand_path(File.join(__dir__, 'assets', 'installation_settings_1.6.json'))))
+      Opsmgr::Api::InstallationSettingsResult.new(fake_response)
+    end
 
-  it "#vms_for_job_type" do
-    vms = opsmanager.vms_for_job_type('rabbitmq-server')
-    expect(vms.first.hostname).to eq("10.85.48.137")
-    expect(vms.first.username).to eq("vcap")
-    expect(vms.first.password).to eq("super-secret-vm-password")
-  end
+    it "#cf_admin_credentials" do
+      credentials = opsmanager.cf_admin_credentials
+      expect(credentials.username).to eq("admin")
+      expect(credentials.password).to eq("uaa-password")
+    end
 
-  it '#bosh_credentials' do
-    credentials = opsmanager.bosh_credentials
-    expect(credentials['identity']).to eq 'director'
-    expect(credentials['password']).to eq 'director_password'
+    it "#system_domain" do
+      expect(opsmanager.system_domain).to eq("cf-system-domain")
+    end
+
+    it "#vms_for_job_type" do
+      vms = opsmanager.vms_for_job_type('rabbitmq-server')
+      expect(vms.first.hostname).to eq("10.85.48.137")
+      expect(vms.first.username).to eq("vcap")
+      expect(vms.first.password).to eq("super-secret-vm-password")
+    end
+
+    it '#bosh_credentials' do
+      credentials = opsmanager.bosh_credentials
+      expect(credentials['identity']).to eq 'director'
+      expect(credentials['password']).to eq 'director_password'
+    end
+
   end
 end

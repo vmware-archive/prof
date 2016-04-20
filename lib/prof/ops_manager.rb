@@ -19,6 +19,8 @@ module Prof
         version
       )
 
+      @version = Gem::Version.new(version)
+
       @api_installation_settings = @api.installation_settings
     end
 
@@ -47,7 +49,12 @@ module Prof
 
       product = get_product_for_job(manifest, job_type)
       ips = @api_installation_settings.ips_for_job(product_name: product['identifier'], job_name: job_type)
-      vm_credentials = product["jobs"].detect { |job| job["installation_name"] == job_type }['vm_credentials']
+      job = product["jobs"].detect { |job| job["installation_name"] == job_type }
+      if @version >= Gem::Version.new('1.7')
+        vm_credentials = job['vm_credentials']
+      else
+        vm_credentials = job['properties'].detect { |p| p['identifier'] == 'vm_credentials' }['value']
+      end
 
       ips.map do |ip|
         OpenStruct.new(
