@@ -45,7 +45,7 @@ module Prof
       def bosh_director
         @bosh_director ||= Hula::BoshDirector.new(
           target_url:  bosh_director_url,
-          username:    ops_manager.bosh_credentials.fetch('identity'),
+          username:    bosh_credentials.fetch('identity'),
           password:    bosh_credentials.fetch('password')
         )
       end
@@ -109,13 +109,13 @@ module Prof
         tempest_config.fetch('proxy')
       end
 
-      def bosh_director_urlo
+      def bosh_director_url
         return URI("https://127.0.0.1:#{forwarded_bosh_port}").to_s if !tempest_config['proxy'].nil?
         return director.hostname
       end
 
       def bosh_credentials
-        @bosh_credentials = ops_manager.bosh_credentials
+        ops_manager.bosh_credentials
       end
     end
   end

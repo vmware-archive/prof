@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    prof (0.31.0)
+    prof (0.31.1)
       bosh_cli
       capybara
       capybara-webkit

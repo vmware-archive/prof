@@ -10,6 +10,7 @@
 
 require 'spec_helper'
 require 'prof/environment/pcf_drinks'
+require 'ostruct'
 
 RSpec.describe Prof::Environment::PcfDrinks do
 
@@ -125,6 +126,47 @@ RSpec.describe Prof::Environment::PcfDrinks do
         password: 'CF_PASSWORD'
       )
       pcf_drinks.cloud_foundry
+    end
+  end
+
+  describe "#bosh_director" do
+    let(:hula_bosh_director_instance) { instance_double(Hula::BoshDirector) }
+    let(:ssh_gateway_instance) { instance_double(Prof::SshGateway) }
+    let(:bosh_credentials) do
+      {
+        'identity' => 'vcap',
+        'password' => 'super-secure-password'
+      }
+    end
+
+    let(:vms_for_job_type_response) do
+      [
+        OpenStruct.new(
+          :hostname => 'vm_hostname',
+          :username => 'vcap',
+          :password => 'super-secret-password'
+        )
+      ]
+    end
+
+    before(:each) do
+      allow(Hula::BoshDirector).to receive(:new).and_return(hula_bosh_director_instance)
+      allow(Prof::OpsManager).to receive(:new).and_return(ops_manager_instance)
+      allow(Prof::SshGateway).to receive(:new).and_return(ssh_gateway_instance)
+      allow(ops_manager_instance).to receive(:bosh_credentials).and_return(bosh_credentials)
+      allow(ops_manager_instance).to receive(:vms_for_job_type).and_return(vms_for_job_type_response)
+      allow(ssh_gateway_instance).to receive(:with_port_forwarded_to).and_return(1234)
+    end
+
+    context 'when the target credentials are set' do
+      it 'provides a Hula::BoshDirector instance' do
+        pcf_drinks.bosh_director
+        expect(Hula::BoshDirector).to have_received(:new).with(
+          target_url: 'https://127.0.0.1:1234',
+          username: 'vcap',
+          password: 'super-secure-password'
+        )
+      end
     end
   end
 end
