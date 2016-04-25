@@ -40,7 +40,7 @@ RSpec.describe Prof::SshGateway do
         expect(net_ssh_gateway_instance).to receive(:ssh).with(
           'HOST',
           'vcap',
-          { password: 'c1oudc0w', paranoid: false }
+          { password: 'c1oudc0w', paranoid: false, auth_methods: ['password', 'publickey'] }
         )
         ssh_gateway.execute_on('HOST', 'CMD')
       end

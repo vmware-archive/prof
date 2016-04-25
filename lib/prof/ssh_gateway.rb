@@ -37,7 +37,11 @@ module Prof
         paranoid: false
       }
 
-      ssh_gateway_options[:key_data] = [@ssh_key] unless @ssh_key.nil?
+      if @ssh_key
+        ssh_gateway_options[:key_data] = [@ssh_key]
+      else
+        ssh_gateway_options[:auth_methods] = [ 'password', 'publickey' ]
+      end
 
       ssh_gateway.ssh(
         host,
