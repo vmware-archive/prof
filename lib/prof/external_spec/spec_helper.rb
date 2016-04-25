@@ -8,7 +8,8 @@
 # USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-require 'opsmgr/ui_helpers/config_helper'
+require 'opsmgr/ui_helpers/settings_helper'
+require 'ops_manager_ui_drivers'
 require 'prof/external_spec/helpers/capybara'
 require 'prof/external_spec/helpers/file_helper'
 require 'prof/external_spec/helpers/product_path'
@@ -28,13 +29,29 @@ RSpec.configure do |config|
   config.include Prof::ExternalSpec::Helpers::Capybara
   config.include Prof::ExternalSpec::Helpers::FileHelper
   config.include Prof::ExternalSpec::Helpers::ProductPath
+  config.include(SettingsHelper)
+  config.include(Capybara::DSL)
+  config.include(OpsManagerUiDrivers::PageHelpers)
+  config.include(OpsManagerUiDrivers::WaitHelper)
 
   config.add_formatter RSpecJUnitFormatter, 'rspec.xml'
 
   config.full_backtrace = true
-  config.fail_fast = false
 
   config.before(:all) do
     setup_browser(:webkit)
+  end
+
+  config.after(:each) do |example|
+    if example.exception
+      page = save_page
+      screenshot = save_screenshot(nil)
+
+      exception = example.exception
+      exception.define_singleton_method :message do
+        super() +
+          "\nHTML page: #{page}\nScreenshot: #{screenshot}"
+      end
+    end
   end
 end
