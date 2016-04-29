@@ -43,15 +43,19 @@ RSpec.configure do |config|
   end
 
   config.after(:each) do |example|
-    if example.exception
-      page = save_page
-      screenshot = save_screenshot(nil)
+    if Capybara.current_session.instance_variable_get(:@touched)
+      if example.exception
+        page = save_page
+        screenshot = save_screenshot(nil)
 
-      exception = example.exception
-      exception.define_singleton_method :message do
-        super() +
-          "\nHTML page: #{page}\nScreenshot: #{screenshot}"
+        exception = example.exception
+        exception.define_singleton_method :message do
+          super() +
+            "\nHTML page: #{page}\nScreenshot: #{screenshot}"
+        end
       end
+
+      Capybara.current_session.reset!
     end
   end
 end
