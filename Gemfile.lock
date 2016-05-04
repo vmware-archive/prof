@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    prof (0.31.5)
+    prof (0.31.6)
       bosh_cli
       capybara
       capybara-webkit
@@ -10,7 +10,7 @@ PATH
       faraday
       faraday_middleware
       httmultiparty
-      hula (~> 0.8.3)
+      hula (~> 0.8.9)
       net-ssh-gateway
       nokogiri
       opsmgr (~> 0.34.19)
