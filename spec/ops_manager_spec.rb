@@ -61,6 +61,16 @@ RSpec.describe Prof::OpsManager do
       expect(credentials['identity']).to eq 'director'
       expect(credentials['password']).to eq 'director_password'
     end
+
+    it '#product_manifest' do
+      installed_products = instance_double(Opsmgr::Api::InstalledProductsResult)
+      expect(installed_products).to receive(:guid_for).with('product').and_return('product-123')
+      expect_any_instance_of(Opsmgr::Api::Client).to receive(:installed_products).and_return(installed_products)
+      manifest = { 'simple' => 'hash' }
+      expect_any_instance_of(Opsmgr::Api::HttpClient).to receive(:product_manifest).with('product-123').and_return(double(body: manifest.to_json))
+      result = opsmanager.product_manifest('product')
+      expect(result).to eq manifest
+    end
   end
 
   context 'for 1.6 OpsManager' do

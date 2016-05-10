@@ -19,6 +19,7 @@ module Prof
         version
       )
 
+      @environment = Opsmgr::Environments.for(environment_name)
       @version = Gem::Version.new(version)
 
       @api_installation_settings = @api.installation_settings
@@ -63,6 +64,13 @@ module Prof
           :password => vm_credentials.fetch("password")
         )
       end
+    end
+
+    def product_manifest(product_name)
+      product_guid = @api.installed_products.guid_for(product_name)
+      client = Opsmgr::Api::HttpClient.build(@environment, @version.to_s)
+      response = client.product_manifest(product_guid)
+      YAML.load(response.body)
     end
 
     private
