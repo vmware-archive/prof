@@ -37,15 +37,9 @@ module Prof
             )
           end
 
-          ::Capybara.register_driver :webkit do |app|
-            ::Capybara::Webkit.configure do |config|
-              config.block_unknown_urls
-            end
-
-            ::Capybara::Webkit::Driver.new(app).tap do |d|
-              d.browser.ignore_ssl_errors
-              d.browser.allow_url('*')
-            end
+          ::Capybara::Webkit.configure do |config|
+            config.block_unknown_urls
+            config.ignore_ssl_errors
           end
         end
 
