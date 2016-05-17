@@ -10,8 +10,11 @@
 
 shared_examples_for 'a service broker which logs to syslog' do
   it 'logs to syslog' do
+    root_prompt = "[sudo] password for vcap:"
+
     broker_ip = broker_host || environment.service_broker.url.host
-    nginx_syslog_line_count = Integer(ssh_gateway.execute_on(broker_ip, "grep -c #{syslog_tag} /var/log/syslog"))
+    result = ssh_gateway.execute_on(broker_ip, "grep -c #{syslog_tag} /var/log/syslog", root: true)[root_prompt.length..-1]
+    nginx_syslog_line_count = Integer(result.strip)
     expect(nginx_syslog_line_count).to be > 0
   end
 end
