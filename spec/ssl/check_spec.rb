@@ -118,7 +118,7 @@ RSpec.describe Prof::SSL::Check do
       end
 
       it 'returns sslv3' do
-        expect(protocols).to include(:SSLv3)
+        expect(protocols).to include(:SSLv23)
       end
     end
   end

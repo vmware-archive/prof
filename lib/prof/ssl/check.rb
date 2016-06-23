@@ -32,7 +32,7 @@ module Prof
         @protocols ||= OpenSSL::SSL::SSLContext::METHODS.reject { |m|
           /_(client|server)$/ =~ m.to_s
         }.reject { |m|
-          m == :SSLv23
+          m == :SSLv2 || m == :SSLv3
         }
       end
 
