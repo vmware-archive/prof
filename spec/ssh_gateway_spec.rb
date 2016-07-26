@@ -35,6 +35,20 @@ RSpec.describe Prof::SshGateway do
       allow(ssh_gateway).to receive(:ssh_gateway).and_return(net_ssh_gateway_instance)
     end
 
+    context 'when warning occurs' do
+      it 'suppresses the warning' do
+        expect(net_ssh_gateway_instance).to receive(:ssh) do
+          warn 'Deprecated warning'
+        end
+
+        captured_stderr_output = capture_stderr do
+          ssh_gateway.execute_on('HOST', 'CMD')
+        end
+
+        expect(captured_stderr_output).not_to include('Deprecated warning')
+      end
+    end
+
     context 'when there is no ssh key' do
       it 'does not set key_data' do
         expect(net_ssh_gateway_instance).to receive(:ssh).with(

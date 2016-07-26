@@ -10,7 +10,7 @@
 
 require 'webmock/rspec'
 require 'rspec_junit_formatter'
-
+require "stringio"
 require 'prof/matchers/only_support_ssl_with_cipher_set'
 
 WebMock.disable_net_connect!(:allow_localhost => true)
@@ -34,4 +34,13 @@ RSpec.configure do |config|
   config.disable_monkey_patching!
 
   Kernel.srand config.seed
+end
+
+
+def capture_stderr
+  previous_stderr, $stderr = $stderr, StringIO.new
+  yield
+  $stderr.string
+ensure
+  $stderr = previous_stderr
 end

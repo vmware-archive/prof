@@ -43,12 +43,14 @@ module Prof
         ssh_gateway_options[:auth_methods] = [ 'password', 'publickey' ]
       end
 
-      ssh_gateway.ssh(
-        host,
-        user,
-        ssh_gateway_options,
-      ) do |ssh|
-        ssh.exec!(cmd)
+      suppress_warnings do
+        ssh_gateway.ssh(
+          host,
+          user,
+          ssh_gateway_options,
+        ) do |ssh|
+          ssh.exec!(cmd)
+        end
       end
     end
 
@@ -103,6 +105,14 @@ module Prof
         "The ssh-agent has #{ssh_agent.identities.size} identities. Please either add a key, or correct password"
       ].join(' ')
       raise Net::SSH::AuthenticationFailed, message
+    end
+
+    def suppress_warnings
+      original_verbosity = $VERBOSE
+      $VERBOSE = nil
+      result = yield
+      $VERBOSE = original_verbosity
+      return result
     end
   end
 end
