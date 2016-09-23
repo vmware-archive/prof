@@ -66,6 +66,13 @@ module Prof
       end
     end
 
+    def staged_manifest(product_name)
+      product_guid = @api.installed_products.guid_for(product_name)
+      client = Opsmgr::Api::HttpClient.build(@environment, @version.to_s)
+      response = client.download_staged_manifest(product_guid)
+      YAML.load(response.body)
+    end
+
     def product_manifest(product_name)
       product_guid = @api.installed_products.guid_for(product_name)
       client = Opsmgr::Api::HttpClient.build(@environment, @version.to_s)
