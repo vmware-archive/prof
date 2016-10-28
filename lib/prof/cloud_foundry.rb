@@ -49,8 +49,7 @@ module Prof
       @password = opts.fetch(:password)
     end
 
-    def push_and_keep_app(app)
-      pushed_app_name = "cf-app-#{SecureRandom.hex(4)}"
+    def push_and_keep_app(app, pushed_app_name = "cf-app-#{SecureRandom.hex(4)}")
       deployed_app    = PushedTestApp.new(name: pushed_app_name, url: hula_cloud_foundry.url_for_app(pushed_app_name))
 
       hula_cloud_foundry.push_app(app.path, deployed_app.name)
