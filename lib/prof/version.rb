@@ -9,5 +9,5 @@
 #
 
 module Prof
-  VERSION = '0.31.17'
+  VERSION = '0.32.0'
 end
