@@ -34,7 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'faraday'
   spec.add_dependency 'faraday_middleware'
   spec.add_dependency 'httmultiparty'
-  spec.add_dependency 'hula', '~> 0.8.9'
+  spec.add_dependency 'hula', '~> 0.9.0'
   spec.add_dependency 'net-ssh-gateway'
   spec.add_dependency 'nokogiri'
   spec.add_dependency 'poltergeist'
