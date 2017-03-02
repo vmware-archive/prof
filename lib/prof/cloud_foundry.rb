@@ -110,8 +110,20 @@ module Prof
 
     def provision_and_create_service_key(service, &_block)
       provision_service(service) do |service_instance|
+        wait_for_service_creation(service_instance)
         create_service_key(service_instance) do |service_key, service_key_data|
           yield service_instance, service_key, service_key_data
+        end
+      end
+    end
+
+    def wait_for_service_creation(service_instance)
+      Timeout::timeout(12 * 60) do
+        loop do
+          status = hula_cloud_foundry.get_service_status(service_instance.name)
+          return if status == 'create succeeded'
+          raise "service instance creation failed: #{service_instance.name}" if status.include? 'failed'
+          sleep 5
         end
       end
     end
