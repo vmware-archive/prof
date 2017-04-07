@@ -47,6 +47,8 @@ module Prof
       @api_url  = opts.fetch(:api_url) { "https://api.#{domain}" }
       @username = opts.fetch(:username)
       @password = opts.fetch(:password)
+
+      @hula_cloud_foundry = opts.fetch(:hula_cloud_foundry) if opts.key?(:hula_cloud_foundry)
     end
 
     def push_and_keep_app(app, pushed_app_name = "cf-app-#{SecureRandom.hex(4)}")
@@ -110,7 +112,6 @@ module Prof
 
     def provision_and_create_service_key(service, &_block)
       provision_service(service) do |service_instance|
-        wait_for_service_creation(service_instance)
         create_service_key(service_instance) do |service_key, service_key_data|
           yield service_instance, service_key, service_key_data
         end
@@ -160,6 +161,7 @@ module Prof
       service_instance = ServiceInstance.new
 
       hula_cloud_foundry.create_service_instance(service.name, service_instance.name, service.plan)
+      wait_for_service_creation(service_instance)
 
       yield service_instance if block_given?
 
