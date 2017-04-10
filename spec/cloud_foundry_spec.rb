@@ -63,9 +63,7 @@ RSpec.describe Prof::CloudFoundry do
 
         expect(hula_cloud_foundry).to receive(:get_service_status).twice
 
-        cloud_foundry.provision_service service do |service_instance|
-          expect(service_instance).not_to be_nil
-        end
+        expect{cloud_foundry.provision_service(service)}.not_to raise_error
       end
     end
 
