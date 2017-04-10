@@ -27,7 +27,7 @@ RSpec.describe Prof::CloudFoundry do
     end
   end
 
-  describe 'create service' do
+  describe 'service actions' do
     let!(:options) do
       {
         domain:   "somedomain.com",
@@ -41,7 +41,7 @@ RSpec.describe Prof::CloudFoundry do
       hula_cloud_foundry = double
       allow(hula_cloud_foundry).to receive(:get_service_status).and_return(
        'in progress',
-       'create succeeded'
+       expected_state
       )
 
       allow(hula_cloud_foundry).to receive(:delete_service_instance_and_unbind)
@@ -51,14 +51,33 @@ RSpec.describe Prof::CloudFoundry do
       hula_cloud_foundry
     end
 
-    it 'waits for service creation to have succeded' do
+    before(:all) do
       Struct.new('Service', :name, :plan)
-      service = Struct::Service.new('the_service_name', 'the_plan_name')
+    end
 
-      expect(hula_cloud_foundry).to receive(:get_service_status).twice
+    context 'create service' do
+      let(:expected_state) { 'create succeeded' }
 
-      cloud_foundry.provision_service service do |service_instance|
-        expect(service_instance).not_to be_nil
+      it 'waits for service creation to have succeded' do
+        service = Struct::Service.new('the_service_name', 'the_plan_name')
+
+        expect(hula_cloud_foundry).to receive(:get_service_status).twice
+
+        cloud_foundry.provision_service service do |service_instance|
+          expect(service_instance).not_to be_nil
+        end
+      end
+    end
+
+    context 'delete service' do
+      let(:expected_state) { 'delete succeeded' }
+
+      it 'waits for service deletion to have succeded' do
+        service = Struct::Service.new('the_service_name', 'the_plan_name')
+
+        expect(hula_cloud_foundry).to receive(:get_service_status).twice
+
+        expect{cloud_foundry.delete_service_instance_and_unbind(service)}.not_to raise_error
       end
     end
   end
