@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'terminal-notifier-guard'
   spec.add_development_dependency 'webmock'
 
-  spec.add_dependency 'bosh_cli'
+  spec.add_dependency 'bosh_cli', '~> 1.3215.3'
   spec.add_dependency 'capybara'
   spec.add_dependency 'capybara-webkit'
   spec.add_dependency 'cf-uaa-lib', '~> 3.2.0'
