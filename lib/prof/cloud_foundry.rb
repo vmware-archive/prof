@@ -118,17 +118,6 @@ module Prof
       end
     end
 
-    def wait_for_service_state(service_instance, expected_state)
-      Timeout::timeout(12 * 60) do
-        loop do
-          status = hula_cloud_foundry.get_service_status(service_instance.name)
-          return if status == expected_state
-          raise "service failed to achieve the expected state #{expected_state}: #{service_instance.name}" if status.include? 'failed'
-          sleep 5
-        end
-      end
-    end
-
     def list_service_keys(service_instance)
       hula_cloud_foundry.list_service_keys(service_instance.name)
     end
@@ -161,7 +150,7 @@ module Prof
       service_instance = ServiceInstance.new
 
       hula_cloud_foundry.create_service_instance(service.name, service_instance.name, service.plan)
-      wait_for_service_state(service_instance, 'create succeeded')
+      wait_for_service_state(service_instance, "create succeeded", "create failed")
 
       yield service_instance if block_given?
 
@@ -172,7 +161,7 @@ module Prof
     def delete_service_instance_and_unbind(service_instance, options = {})
       hula_cloud_foundry.delete_service_instance_and_unbind(service_instance.name, options)
 
-      wait_for_service_state(service_instance, 'delete succeeded')
+      wait_for_service_state(service_instance, "Service instance #{service_instance.name} not found", "delete failed")
     end
 
     def auth_token
@@ -180,6 +169,17 @@ module Prof
     end
 
     private
+
+    def wait_for_service_state(service_instance, expected_state, failure_state)
+      Timeout::timeout(12 * 60) do
+        loop do
+          status = hula_cloud_foundry.get_service_status(service_instance.name)
+          return if status.include? expected_state
+          raise "service failed to achieve the expected state #{expected_state}: #{service_instance.name}" if status.include? failure_state
+          sleep 5
+        end
+      end
+    end
 
     def hula_cloud_foundry
       @hula_cloud_foundry ||= Hula::CloudFoundry.new(
