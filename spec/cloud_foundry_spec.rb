@@ -42,11 +42,17 @@ RSpec.describe Prof::CloudFoundry do
       }
     end
 
+    let(:service_instance_name) { SecureRandom.uuid }
+    let(:service_instance) { Struct::ServiceInstance.new(service_instance_name) }
+
     let(:hula_cloud_foundry) do
       hula_cloud_foundry = double
       allow(hula_cloud_foundry).to receive(:get_service_status).and_return(
+        # Required for testing asynchonicity
         'in progress',
-        state_under_test
+        state_under_test,
+        # Required for ensure block to delete successfully
+        "Service instance #{service_instance_name} not found",
       )
 
       allow(hula_cloud_foundry).to receive(:delete_service_instance_and_unbind)
@@ -56,17 +62,18 @@ RSpec.describe Prof::CloudFoundry do
       hula_cloud_foundry
     end
 
+    before(:all) do
+      Struct.new('Service', :name, :plan)
+      Struct.new('ServiceInstance', :name)
+    end
+
     context 'create service' do
       let(:state_under_test) { 'create succeeded' }
       let(:service) { Struct::Service.new('the_service_name', 'the_plan_name') }
 
-      before(:all) do
-        Struct.new('Service', :name, :plan)
-      end
-
       it 'waits for service creation to have succeded' do
-        expect(hula_cloud_foundry).to receive(:get_service_status).twice
-        expect{cloud_foundry.provision_service(service)}.not_to raise_error
+        expect(hula_cloud_foundry).to receive(:get_service_status).at_least(:twice)
+        expect{cloud_foundry.provision_service(service, {}, service_instance)}.not_to raise_error
       end
 
       context 'when a timeout error is thrown' do
@@ -74,7 +81,7 @@ RSpec.describe Prof::CloudFoundry do
         let(:retry_interval) { 1 }
 
         it 'times out if wrong service instance name is checked' do
-          expect(hula_cloud_foundry).to receive(:get_service_status).exactly(:once)
+          expect(hula_cloud_foundry).to receive(:get_service_status).at_least(:once)
           expect{cloud_foundry.provision_service(service)}.to raise_error(Timeout::Error)
         end
       end
@@ -83,20 +90,14 @@ RSpec.describe Prof::CloudFoundry do
         let(:state_under_test) { "create failed" }
 
         it 'throws when status matches the error condition' do
-          expect(hula_cloud_foundry).to receive(:get_service_status).exactly(2).times
-          expect{cloud_foundry.provision_service(service)}.to raise_error(/Error #{state_under_test} occured for service instance: /)
+          expect(hula_cloud_foundry).to receive(:get_service_status).at_least(2).times
+          expect{cloud_foundry.provision_service(service, {}, service_instance)}.to raise_error(/Error #{state_under_test} occured for service instance: /)
         end
       end
     end
 
     context 'delete service' do
-      let(:service_instance_name) { SecureRandom.uuid }
-      let(:service_instance) { Struct::ServiceInstance.new(service_instance_name) }
       let(:state_under_test) { "Service instance #{service_instance_name} not found" }
-
-      before(:all) do
-        Struct.new('ServiceInstance', :name)
-      end
 
       it 'waits for service deletion to have succeded' do
         expect(hula_cloud_foundry).to receive(:get_service_status).twice

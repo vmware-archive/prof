@@ -149,16 +149,14 @@ module Prof
       service_instance.name
     end
 
-    def provision_service(service, options = {}, &_block)
-      service_instance = ServiceInstance.new
-
+    def provision_service(service, options = {}, service_instance = ServiceInstance.new, &_block)
       hula_cloud_foundry.create_service_instance(service.name, service_instance.name, service.plan)
       wait_for_service_state(service_instance, "create succeeded", "create failed")
 
       yield service_instance if block_given?
 
     ensure
-      hula_cloud_foundry.delete_service_instance_and_unbind(service_instance.name, options)
+      delete_service_instance_and_unbind(service_instance, options)
     end
 
     def delete_service_instance_and_unbind(service_instance, options = {})
