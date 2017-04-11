@@ -19,7 +19,7 @@ module Prof
   class CloudFoundry
     extend Forwardable
 
-    attr_reader :api_url, :domain, :username, :password
+    attr_reader :api_url, :domain, :username, :password, :retry_timeout, :retry_interval
 
     def_delegators :hula_cloud_foundry,
                    :add_public_service_broker,
@@ -47,6 +47,9 @@ module Prof
       @api_url  = opts.fetch(:api_url) { "https://api.#{domain}" }
       @username = opts.fetch(:username)
       @password = opts.fetch(:password)
+
+      @retry_interval = opts.fetch(:retry_interval) { 5 }
+      @retry_timeout  = opts.fetch(:retry_timeout)  { 720 }
 
       @hula_cloud_foundry = opts.fetch(:hula_cloud_foundry) if opts.key?(:hula_cloud_foundry)
     end
@@ -171,12 +174,12 @@ module Prof
     private
 
     def wait_for_service_state(service_instance, expected_state, failure_state)
-      Timeout::timeout(12 * 60) do
+      Timeout::timeout(retry_timeout) do
         loop do
           status = hula_cloud_foundry.get_service_status(service_instance.name)
           return if status.include? expected_state
-          raise "service failed to achieve the expected state #{expected_state}: #{service_instance.name}" if status.include? failure_state
-          sleep 5
+          raise "Error #{failure_state} occured for service instance: #{service_instance.name}" if status.include? failure_state
+          sleep retry_interval
         end
       end
     end
