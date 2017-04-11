@@ -45,8 +45,8 @@ RSpec.describe Prof::CloudFoundry do
     let(:hula_cloud_foundry) do
       hula_cloud_foundry = double
       allow(hula_cloud_foundry).to receive(:get_service_status).and_return(
-       'in progress',
-       expected_state
+        'in progress',
+        state_under_test
       )
 
       allow(hula_cloud_foundry).to receive(:delete_service_instance_and_unbind)
@@ -57,26 +57,44 @@ RSpec.describe Prof::CloudFoundry do
     end
 
     context 'create service' do
-      let(:expected_state) { 'create succeeded' }
+      let(:state_under_test) { 'create succeeded' }
+      let(:service) { Struct::Service.new('the_service_name', 'the_plan_name') }
 
-      before do
+      before(:all) do
         Struct.new('Service', :name, :plan)
       end
 
       it 'waits for service creation to have succeded' do
-        service = Struct::Service.new('the_service_name', 'the_plan_name')
-
         expect(hula_cloud_foundry).to receive(:get_service_status).twice
         expect{cloud_foundry.provision_service(service)}.not_to raise_error
+      end
+
+      context 'when a timeout error is thrown' do
+        let(:retry_timeout) { 0.1 }
+        let(:retry_interval) { 1 }
+
+        it 'times out if wrong service instance name is checked' do
+          expect(hula_cloud_foundry).to receive(:get_service_status).exactly(:once)
+          expect{cloud_foundry.provision_service(service)}.to raise_error(Timeout::Error)
+        end
+      end
+
+      context 'when get_service_status returns failure' do
+        let(:state_under_test) { "create failed" }
+
+        it 'throws when status matches the error condition' do
+          expect(hula_cloud_foundry).to receive(:get_service_status).exactly(2).times
+          expect{cloud_foundry.provision_service(service)}.to raise_error(/Error #{state_under_test} occured for service instance: /)
+        end
       end
     end
 
     context 'delete service' do
       let(:service_instance_name) { SecureRandom.uuid }
       let(:service_instance) { Struct::ServiceInstance.new(service_instance_name) }
-      let(:expected_state) { "Service instance #{service_instance_name} not found" }
+      let(:state_under_test) { "Service instance #{service_instance_name} not found" }
 
-      before do
+      before(:all) do
         Struct.new('ServiceInstance', :name)
       end
 
@@ -96,10 +114,10 @@ RSpec.describe Prof::CloudFoundry do
       end
 
       context 'when get_service_status returns failure' do
-        let(:expected_state) { "delete failed" }
+        let(:state_under_test) { "delete failed" }
 
         it 'throws when status matches the error condition' do
-          err_message = "Error #{expected_state} occured for service instance: #{service_instance.name}"
+          err_message = "Error #{state_under_test} occured for service instance: #{service_instance.name}"
 
           expect(hula_cloud_foundry).to receive(:get_service_status).exactly(2).times
           expect{cloud_foundry.delete_service_instance_and_unbind(service_instance)}.to raise_error(err_message)
