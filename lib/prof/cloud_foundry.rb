@@ -146,6 +146,7 @@ module Prof
       service_instance = ServiceInstance.new
 
       hula_cloud_foundry.create_service_instance(service.name, service_instance.name, service.plan)
+      wait_for_service_state(service_instance, "create succeeded", "create failed")
       service_instance.name
     end
 
@@ -174,7 +175,7 @@ module Prof
     def wait_for_service_state(service_instance, expected_state, failure_state)
       Timeout::timeout(retry_timeout) do
         loop do
-          status = hula_cloud_foundry.get_service_status(service_instance.name)
+          status = hula_cloud_foundry.get_service_status(service_instance.name, {:allow_failure => true})
           return if status.include? expected_state
           raise "Error #{failure_state} occured for service instance: #{service_instance.name}" if status.include? failure_state
           sleep retry_interval
