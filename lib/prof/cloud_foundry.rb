@@ -135,6 +135,7 @@ module Prof
 
       yield service_key_name, service_key_data
 
+    ensure
       hula_cloud_foundry.delete_service_key(service_instance.name, service_key_name)
     end
 
@@ -157,6 +158,7 @@ module Prof
       yield service_instance if block_given?
 
     ensure
+      options[:allow_failure] = false
       delete_service_instance_and_unbind(service_instance, options)
     end
 
