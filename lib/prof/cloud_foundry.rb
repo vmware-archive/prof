@@ -143,9 +143,7 @@ module Prof
       hula_cloud_foundry.delete_service_key(service_instance.name, service_key)
     end
 
-    def provision_and_keep_service(service)
-      service_instance = ServiceInstance.new
-
+    def provision_and_keep_service(service, service_instance = ServiceInstance.new)
       hula_cloud_foundry.create_service_instance(service.name, service_instance.name, service.plan)
       wait_for_service_state(service_instance, "create succeeded", "create failed")
       service_instance.name
