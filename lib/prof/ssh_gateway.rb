@@ -15,11 +15,12 @@ require 'uri'
 
 module Prof
   class SshGateway
-    def initialize(gateway_host:, gateway_username:, gateway_password: nil, ssh_key: nil)
+    def initialize(gateway_host:, gateway_username:, gateway_password: nil, ssh_key: nil, gateway_private_key: nil)
       @gateway_host     = gateway_host
       @gateway_username = gateway_username
       @gateway_password = gateway_password
       @ssh_key          = ssh_key
+      @gateway_private_key = gateway_private_key
       @forwards         = {}
     end
 
@@ -93,12 +94,18 @@ module Prof
     end
 
     def ssh_gateway
-      @ssh_gateway ||= Net::SSH::Gateway.new(
-        gateway_host,
-        gateway_username,
-        password: gateway_password,
-        paranoid: false
-      )
+      opts = { paranoid: false }
+
+      if @gateway_private_key
+        opts[:keys] = [@gateway_private_key]
+      else
+        opts[:password] = gateway_password
+      end
+      
+      puts gateway_host + ":" + gateway_username
+      puts opts.inspect
+
+      @ssh_gateway ||= Net::SSH::Gateway.new(gateway_host, gateway_username, opts)
     rescue Net::SSH::AuthenticationFailed
       message = [
         "Failed to connect to #{gateway_host}, with #{gateway_username}:#{gateway_password}.",

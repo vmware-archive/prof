@@ -31,20 +31,23 @@ module Prof
 
         cloud_foundry_username:    'admin',
         cloud_foundry_password:    'admin',
-        cloud_foundry_api_url:      nil,
+        cloud_foundry_api_url:     nil,
 
         bosh_target:               'https://192.168.50.4:25555',
         bosh_username:             'admin',
         bosh_password:             'admin',
+        bosh_ca_cert:              nil,
 
         ssh_gateway_host:          '192.168.50.4',
         ssh_gateway_username:      'vagrant',
         ssh_gateway_password:      'vagrant',
+        ssh_gateway_private_key:   nil,
 
         bosh_service_broker_job_name:,
         bosh_manifest_path:,
 
-        use_proxy:                 true
+        use_proxy:                 true,
+        bosh_target_is_public:     false
       )
         @cloud_foundry_domain = cloud_foundry_domain
         @cloud_controller_identity = cloud_controller_identity
@@ -57,10 +60,13 @@ module Prof
         @ssh_gateway_host = ssh_gateway_host
         @ssh_gateway_username = ssh_gateway_username
         @ssh_gateway_password = ssh_gateway_password
+        @ssh_gateway_private_key = ssh_gateway_private_key
         @bosh_service_broker_job_name = bosh_service_broker_job_name
         @bosh_manifest_path = bosh_manifest_path
         @cloud_foundry_api_url = cloud_foundry_api_url
         @use_proxy = use_proxy
+        @bosh_target_is_public = bosh_target_is_public
+        @bosh_ca_cert          = bosh_ca_cert
       end
 
       def cloud_foundry
@@ -94,20 +100,45 @@ module Prof
       end
 
       def bosh_director
+        if bosh_target_is_public
+          initialize_bosh_director bosh_target
+        else
+          gateway_opts = {
+            gateway_host: ssh_gateway_host,
+            gateway_username: ssh_gateway_username,
+            gateway_private_key: ssh_gateway_private_key
+          }
+          target = URI.parse(bosh_target)
+          forwarding_port = ssh_gateway.with_port_forwarded_to(target.host, target.port)
+          # TODO: I don't understand why the redis client does a return yield and works, look into it
+          initialize_bosh_director "#{target.scheme}://127.0.0.1:#{forwarding_port}", gateway_opts
+        end
+      end
+
+      def initialize_bosh_director(target_url, gateway_opts=nil)
         @bosh_director ||= Hula::BoshDirector.new(
-          target_url:    bosh_target,
+          target_url:    target_url,
           username:      bosh_username,
           password:      bosh_password,
-          manifest_path: bosh_manifest_path
+          manifest_path: bosh_manifest_path,
+          certificate_path: bosh_ca_cert,
+          gateway_opts: gateway_opts
         )
       end
 
       def ssh_gateway
-        @ssh_gateway ||= SshGateway.new(
-          gateway_host:     ssh_gateway_host,
+        opts = {
+          gateway_host: ssh_gateway_host,
           gateway_username: ssh_gateway_username,
-          gateway_password: ssh_gateway_password
-        )
+        }
+
+        if ssh_gateway_private_key
+          opts[:gateway_private_key] = ssh_gateway_private_key
+        else
+          opts[:gateway_password] = ssh_gateway_password
+        end
+
+        @ssh_gateway ||= SshGateway.new(opts)
       end
 
       def cloud_foundry_uaa
@@ -135,7 +166,7 @@ module Prof
       attr_reader :cloud_controller_identity, :cloud_controller_password,
                   :cloud_foundry_username, :cloud_foundry_password, :bosh_target, :bosh_username, :bosh_password,
                   :ssh_gateway_host, :ssh_gateway_username, :ssh_gateway_password, :bosh_manifest_path,
-                  :cloud_foundry_api_url, :use_proxy
+                  :cloud_foundry_api_url, :use_proxy, :ssh_gateway_private_key, :bosh_target_is_public, :bosh_ca_cert
 
       def broker_registrar_properties
         bosh_manifest.job('broker-registrar').properties.fetch('broker')
