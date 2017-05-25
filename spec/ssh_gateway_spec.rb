@@ -32,7 +32,35 @@ RSpec.describe Prof::SshGateway do
     end
 
     before do
-      allow(ssh_gateway).to receive(:ssh_gateway).and_return(net_ssh_gateway_instance)
+      allow(Net::SSH::Gateway).to receive(:new).and_return(net_ssh_gateway_instance)
+    end
+
+    context 'when the gateway uses basic auth' do
+      it 'authenticates with the gateway using username and password' do
+        allow(net_ssh_gateway_instance).to receive(:ssh)
+
+        ssh_gateway.execute_on('HOST', 'CMD')
+
+        expect(Net::SSH::Gateway).to have_received(:new).
+          with('GATEWAY_HOST', 'GATEWAY_USERNAME', password: 'GATEWAY_PASSWORD', paranoid: false)
+      end
+    end
+
+    context 'when the gateway uses public-key cryptography' do
+      it 'authenticates with the gateway using a username and a private key' do
+        ssh_gateway = described_class.new(
+          gateway_host: 'GATEWAY_HOST',
+          gateway_username: 'GATEWAY_USERNAME',
+          gateway_private_key: 'GATEWAY_PRIVATE_KEY',
+          ssh_key: ssh_key
+        )
+        allow(net_ssh_gateway_instance).to receive(:ssh)
+
+        ssh_gateway.execute_on('HOST', 'CMD')
+
+        expect(Net::SSH::Gateway).to have_received(:new).
+          with('GATEWAY_HOST', 'GATEWAY_USERNAME', keys: ['GATEWAY_PRIVATE_KEY'], paranoid: false)
+      end
     end
 
     context 'when warning occurs' do
@@ -78,4 +106,3 @@ RSpec.describe Prof::SshGateway do
   end
 
 end
-

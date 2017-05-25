@@ -15,18 +15,19 @@ require 'uri'
 
 module Prof
   class SshGateway
-    def initialize(gateway_host:, gateway_username:, gateway_password: nil, ssh_key: nil)
-      @gateway_host     = gateway_host
+    def initialize(gateway_host:, gateway_username:, gateway_password: nil, gateway_private_key: nil, ssh_key: nil)
+      @gateway_host = gateway_host
       @gateway_username = gateway_username
       @gateway_password = gateway_password
-      @ssh_key          = ssh_key
-      @forwards         = {}
+      @gateway_private_key = gateway_private_key
+      @ssh_key = ssh_key
+      @forwards = {}
     end
 
     def execute_on(host, cmd, options = {})
-      user           = options.fetch(:user, 'vcap')
-      password       = options.fetch(:password, 'c1oudc0w')
-      run_as_root    = options.fetch(:root, false)
+      user = options.fetch(:user, 'vcap')
+      password = options.fetch(:password, 'c1oudc0w')
+      run_as_root = options.fetch(:root, false)
       discard_stderr = options.fetch(:discard_stderr, false)
 
       cmd = "echo -e \"#{password}\\n\" | sudo -S #{cmd}" if run_as_root
@@ -82,8 +83,6 @@ module Prof
 
     private
 
-    attr_reader :gateway_username, :gateway_password, :forwards
-
     def ssh_agent
       @ssh_agent ||= Net::SSH::Authentication::Agent.connect
     end
@@ -93,15 +92,21 @@ module Prof
     end
 
     def ssh_gateway
+      opts = { paranoid: false }
+      if @gateway_private_key
+        opts[:keys] = [@gateway_private_key]
+      else
+        opts[:password] = @gateway_password
+      end
+
       @ssh_gateway ||= Net::SSH::Gateway.new(
         gateway_host,
-        gateway_username,
-        password: gateway_password,
-        paranoid: false
+        @gateway_username,
+        opts
       )
     rescue Net::SSH::AuthenticationFailed
       message = [
-        "Failed to connect to #{gateway_host}, with #{gateway_username}:#{gateway_password}.",
+        "Failed to connect to #{gateway_host}, with #{@gateway_username}:#{@gateway_password}.",
         "The ssh-agent has #{ssh_agent.identities.size} identities. Please either add a key, or correct password"
       ].join(' ')
       raise Net::SSH::AuthenticationFailed, message
