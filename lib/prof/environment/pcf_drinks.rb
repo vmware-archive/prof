@@ -31,7 +31,7 @@ module Prof
       end
 
       def cloud_foundry
-        @cloud_foundry ||= CloudFoundry.new(
+        @cloud_foundry ||= Prof::CloudFoundry.new(
           domain:   cloud_foundry_domain,
           username: ops_manager.cf_admin_credentials.username,
           password: ops_manager.cf_admin_credentials.password

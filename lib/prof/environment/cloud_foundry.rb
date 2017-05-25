@@ -40,6 +40,7 @@ module Prof
         ssh_gateway_host:          '192.168.50.4',
         ssh_gateway_username:      'vagrant',
         ssh_gateway_password:      'vagrant',
+        ssh_gateway_private_key:   nil,
 
         bosh_service_broker_job_name:,
         bosh_manifest_path:,
@@ -57,6 +58,7 @@ module Prof
         @ssh_gateway_host = ssh_gateway_host
         @ssh_gateway_username = ssh_gateway_username
         @ssh_gateway_password = ssh_gateway_password
+        @ssh_gateway_private_key = ssh_gateway_private_key
         @bosh_service_broker_job_name = bosh_service_broker_job_name
         @bosh_manifest_path = bosh_manifest_path
         @cloud_foundry_api_url = cloud_foundry_api_url
@@ -103,11 +105,18 @@ module Prof
       end
 
       def ssh_gateway
-        @ssh_gateway ||= SshGateway.new(
+        opts = {
           gateway_host:     ssh_gateway_host,
           gateway_username: ssh_gateway_username,
-          gateway_password: ssh_gateway_password
-        )
+        }
+
+        if @ssh_gateway_private_key
+          opts[:gateway_private_key] = ssh_gateway_private_key
+        else
+          opts[:gateway_password] = ssh_gateway_password
+        end
+
+        @ssh_gateway ||= Prof::SshGateway.new(opts)
       end
 
       def cloud_foundry_uaa
@@ -135,7 +144,7 @@ module Prof
       attr_reader :cloud_controller_identity, :cloud_controller_password,
                   :cloud_foundry_username, :cloud_foundry_password, :bosh_target, :bosh_username, :bosh_password,
                   :ssh_gateway_host, :ssh_gateway_username, :ssh_gateway_password, :bosh_manifest_path,
-                  :cloud_foundry_api_url, :use_proxy
+                  :cloud_foundry_api_url, :use_proxy, :ssh_gateway_private_key
 
       def broker_registrar_properties
         bosh_manifest.job('broker-registrar').properties.fetch('broker')
