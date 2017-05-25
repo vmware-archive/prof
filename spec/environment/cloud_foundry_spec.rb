@@ -12,8 +12,9 @@ require 'spec_helper'
 require 'prof/environment/cloud_foundry'
 
 RSpec.describe Prof::Environment::CloudFoundry do
-  context 'without ssh gateway configuration' do
-    it 'has a basic auth gateway with default values' do
+  describe 'ssh_gateway' do
+    context 'without configuration' do
+      it 'has a basic auth gateway with default values' do
         gateway = instance_double(Prof::SshGateway)
         expect(Prof::SshGateway).to receive(:new).with(
           gateway_host: '192.168.50.4',
@@ -27,48 +28,119 @@ RSpec.describe Prof::Environment::CloudFoundry do
         )
 
         expect(cf.ssh_gateway).to be(gateway)
+      end
+    end
+
+    context 'with basic auth configuration' do
+      it 'has a basic auth gateway' do
+        gateway = instance_double(Prof::SshGateway)
+        expect(Prof::SshGateway).to receive(:new).with(
+          gateway_host: 'HOST',
+          gateway_username: 'USERNAME',
+          gateway_password: 'PASSWORD'
+        ).and_return(gateway)
+
+        cf = described_class.new(
+          ssh_gateway_host: 'HOST',
+          ssh_gateway_username: 'USERNAME',
+          ssh_gateway_password: 'PASSWORD',
+          bosh_service_broker_job_name: 'job_name',
+          bosh_manifest_path: 'manifest_path'
+        )
+
+        expect(cf.ssh_gateway).to be(gateway)
+      end
+    end
+
+    context 'with public key configuration' do
+      it 'has a public-key cryptography gateway' do
+        gateway = instance_double(Prof::SshGateway)
+        expect(Prof::SshGateway).to receive(:new).with(
+          gateway_host: 'HOST',
+          gateway_username: 'USERNAME',
+          gateway_private_key: 'PRIVATE_KEY'
+        ).and_return(gateway)
+
+        cf = described_class.new(
+          ssh_gateway_host: 'HOST',
+          ssh_gateway_username: 'USERNAME',
+          ssh_gateway_private_key: 'PRIVATE_KEY',
+          bosh_service_broker_job_name: 'job_name',
+          bosh_manifest_path: 'manifest_path'
+        )
+
+        expect(cf.ssh_gateway).to be(gateway)
+      end
     end
   end
 
-  context 'with ssh gateway basic auth configuration' do
-    it 'it has a basic auth gateway' do
-      gateway = instance_double(Prof::SshGateway)
-      expect(Prof::SshGateway).to receive(:new).with(
-        gateway_host: 'HOST',
-        gateway_username: 'USERNAME',
-        gateway_password: 'PASSWORD'
-      ).and_return(gateway)
+  describe 'bosh_director' do
+    context 'without configuration' do
+      it 'has a basic auth bosh director with default values' do
+        director = instance_double(Hula::BoshDirector)
+        expect(Hula::BoshDirector).to receive(:new).
+          with(
+            target_url: 'https://192.168.50.4:25555',
+            username: 'admin',
+            password: 'admin',
+            manifest_path: 'manifest_path',
+            certificate_path: nil,
+            env_login: false
+          ).and_return(director)
 
-      cf = described_class.new(
-        ssh_gateway_host: 'HOST',
-        ssh_gateway_username: 'USERNAME',
-        ssh_gateway_password: 'PASSWORD',
-        bosh_service_broker_job_name: 'job_name',
-        bosh_manifest_path: 'manifest_path'
-      )
+        cf = described_class.new(
+          bosh_service_broker_job_name: 'job_name',
+          bosh_manifest_path: 'manifest_path'
+        )
 
-      expect(cf.ssh_gateway).to be(gateway)
+        expect(cf.bosh_director).to be(director)
+      end
     end
-  end
 
-  context 'with ssh gateway public key configuration' do
-    it 'has a public-key cryptography gateway' do
-      gateway = instance_double(Prof::SshGateway)
-      expect(Prof::SshGateway).to receive(:new).with(
-        gateway_host: 'HOST',
-        gateway_username: 'USERNAME',
-        gateway_private_key: 'PRIVATE_KEY'
-      ).and_return(gateway)
+    context 'with a bosh ca cert configured' do
+      it 'has a basic auth bosh director with a ca cert' do
+        director = instance_double(Hula::BoshDirector)
+        expect(Hula::BoshDirector).to receive(:new).
+          with(
+            target_url: 'https://192.168.50.4:25555',
+            username: 'admin',
+            password: 'admin',
+            manifest_path: 'manifest_path',
+            certificate_path: 'certificate_path',
+            env_login: false
+          ).and_return(director)
 
-      cf = described_class.new(
-        ssh_gateway_host: 'HOST',
-        ssh_gateway_username: 'USERNAME',
-        ssh_gateway_private_key: 'PRIVATE_KEY',
-        bosh_service_broker_job_name: 'job_name',
-        bosh_manifest_path: 'manifest_path'
-      )
+        cf = described_class.new(
+          bosh_service_broker_job_name: 'job_name',
+          bosh_manifest_path: 'manifest_path',
+          bosh_ca_cert_path: 'certificate_path'
+        )
 
-      expect(cf.ssh_gateway).to be(gateway)
+        expect(cf.bosh_director).to be(director)
+      end
+    end
+
+    context 'with a bosh env login enabled' do
+      it 'has a bosh director with env login' do
+        director = instance_double(Hula::BoshDirector)
+        expect(Hula::BoshDirector).to receive(:new).
+          with(
+            target_url: 'https://192.168.50.4:25555',
+            username: 'admin',
+            password: 'admin',
+            manifest_path: 'manifest_path',
+            certificate_path: nil,
+            env_login: true
+          ).and_return(director)
+
+        cf = described_class.new(
+          bosh_service_broker_job_name: 'job_name',
+          bosh_manifest_path: 'manifest_path',
+          bosh_env_login: true
+        )
+
+        expect(cf.bosh_director).to be(director)
+      end
     end
   end
 end

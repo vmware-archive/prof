@@ -36,6 +36,8 @@ module Prof
         bosh_target:               'https://192.168.50.4:25555',
         bosh_username:             'admin',
         bosh_password:             'admin',
+        bosh_ca_cert_path:         nil,
+        bosh_env_login:            false,
 
         ssh_gateway_host:          '192.168.50.4',
         ssh_gateway_username:      'vagrant',
@@ -55,6 +57,8 @@ module Prof
         @bosh_target = bosh_target
         @bosh_username = bosh_username
         @bosh_password = bosh_password
+        @bosh_ca_cert_path = bosh_ca_cert_path
+        @bosh_env_login = bosh_env_login
         @ssh_gateway_host = ssh_gateway_host
         @ssh_gateway_username = ssh_gateway_username
         @ssh_gateway_password = ssh_gateway_password
@@ -97,10 +101,12 @@ module Prof
 
       def bosh_director
         @bosh_director ||= Hula::BoshDirector.new(
-          target_url:    bosh_target,
-          username:      bosh_username,
-          password:      bosh_password,
-          manifest_path: bosh_manifest_path
+          target_url:       bosh_target,
+          username:         bosh_username,
+          password:         bosh_password,
+          manifest_path:    bosh_manifest_path,
+          certificate_path: bosh_ca_cert_path,
+          env_login:        bosh_env_login
         )
       end
 
@@ -144,7 +150,7 @@ module Prof
       attr_reader :cloud_controller_identity, :cloud_controller_password,
                   :cloud_foundry_username, :cloud_foundry_password, :bosh_target, :bosh_username, :bosh_password,
                   :ssh_gateway_host, :ssh_gateway_username, :ssh_gateway_password, :bosh_manifest_path,
-                  :cloud_foundry_api_url, :use_proxy, :ssh_gateway_private_key
+                  :cloud_foundry_api_url, :use_proxy, :ssh_gateway_private_key, :bosh_ca_cert_path, :bosh_env_login
 
       def broker_registrar_properties
         bosh_manifest.job('broker-registrar').properties.fetch('broker')
