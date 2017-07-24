@@ -40,7 +40,8 @@ module Prof
                    :setup_permissive_security_group,
                    :app_vcap_services,
                    :marketplace,
-                   :info
+                   :info,
+                   :cf
 
     def initialize(opts = {})
       @domain   = opts.fetch(:domain)
