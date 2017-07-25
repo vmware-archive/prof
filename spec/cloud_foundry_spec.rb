@@ -65,6 +65,7 @@ RSpec.describe Prof::CloudFoundry do
     before(:all) do
       Struct.new('Service', :name, :plan)
       Struct.new('ServiceInstance', :name)
+      Struct.new('App', :name)
     end
 
     context 'create service' do
@@ -93,6 +94,28 @@ RSpec.describe Prof::CloudFoundry do
           expect(hula_cloud_foundry).to receive(:get_service_status).at_least(2).times
           expect{cloud_foundry.provision_service(service, {}, service_instance)}.to raise_error(/Error #{state_under_test} occured for service instance: /)
         end
+      end
+    end
+
+    context 'block fails' do
+      let(:state_under_test) { "provided block fails" }
+      let(:service) { Struct::Service.new('the_service_name', 'the_plan_name') }
+      let(:app) { Struct::App.new('panda') }
+
+      before(:each) do
+        allow(hula_cloud_foundry).to receive(:bind_app_to_service)
+        allow(hula_cloud_foundry).to receive(:start_app)
+        allow(hula_cloud_foundry).to receive(:unbind_app_from_service)
+      end
+
+      it 'unbinds the service if there is an error in the block' do
+          expect(hula_cloud_foundry).to receive(:unbind_app_from_service).at_least(1).times
+
+          expect {
+            cloud_foundry.bind_service_and_run(app, service_instance) { |a, b|
+              raise "ImAnError"
+            }
+          }.to raise_error("ImAnError")
       end
     end
 

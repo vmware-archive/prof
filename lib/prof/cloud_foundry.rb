@@ -107,6 +107,7 @@ module Prof
 
       yield
 
+    ensure
       hula_cloud_foundry.unbind_app_from_service(pushed_app.name, service_instance.name)
     end
 
