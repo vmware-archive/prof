@@ -153,7 +153,12 @@ module Prof
                   :cloud_foundry_api_url, :use_proxy, :ssh_gateway_private_key, :bosh_ca_cert_path, :bosh_env_login
 
       def broker_registrar_properties
-        bosh_manifest.job('broker-registrar').properties.fetch('broker')
+        begin
+          bosh_manifest.job('broker-registrar').properties.fetch('broker')
+        rescue RuntimeError
+          # for colocated errands, the errand's instance group might not exist
+          bosh_manifest.properties.fetch('broker')
+        end
       end
 
       def http_json_client(use_proxy:)
