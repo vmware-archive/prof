@@ -38,7 +38,7 @@ RSpec.describe Prof::CloudFoundry do
         password: "some-password",
         hula_cloud_foundry: hula_cloud_foundry,
         retry_timeout: retry_timeout,
-        retry_interval: retry_interval,
+        retry_interval: retry_interval
       }
     end
 

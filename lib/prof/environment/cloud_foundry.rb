@@ -47,7 +47,8 @@ module Prof
         bosh_service_broker_job_name:,
         bosh_manifest_path:,
 
-        use_proxy:                 true
+        use_proxy:                 true,
+        broker_api_version:
       )
         @cloud_foundry_domain = cloud_foundry_domain
         @cloud_controller_identity = cloud_controller_identity
@@ -67,6 +68,7 @@ module Prof
         @bosh_manifest_path = bosh_manifest_path
         @cloud_foundry_api_url = cloud_foundry_api_url
         @use_proxy = use_proxy
+        @broker_api_version = broker_api_version
       end
 
       def cloud_foundry
@@ -86,12 +88,17 @@ module Prof
         @cloud_foundry_domain ||= bosh_manifest.property('cf.domain')
       end
 
+      def broker_api_version
+        @broker_api_version
+      end
+
       def service_broker
         @service_broker ||= Hula::ServiceBroker::Client.new(
           url: URI::HTTPS.build(host: broker_registrar_properties.fetch('host')),
           username: broker_registrar_properties.fetch('username'),
           password: broker_registrar_properties.fetch('password'),
-          http_client: http_json_client(use_proxy: use_proxy)
+          http_client: http_json_client(use_proxy: use_proxy),
+          broker_api_version: broker_api_version
         )
       end
 

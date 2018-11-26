@@ -24,7 +24,8 @@ RSpec.describe Prof::Environment::CloudFoundry do
 
         cf = described_class.new(
           bosh_service_broker_job_name: 'job_name',
-          bosh_manifest_path: 'manifest_path'
+          bosh_manifest_path: 'manifest_path',
+          broker_api_version: '2.13'
         )
 
         expect(cf.ssh_gateway).to be(gateway)
@@ -45,7 +46,8 @@ RSpec.describe Prof::Environment::CloudFoundry do
           ssh_gateway_username: 'USERNAME',
           ssh_gateway_password: 'PASSWORD',
           bosh_service_broker_job_name: 'job_name',
-          bosh_manifest_path: 'manifest_path'
+          bosh_manifest_path: 'manifest_path',
+          broker_api_version: '2.13'
         )
 
         expect(cf.ssh_gateway).to be(gateway)
@@ -66,7 +68,8 @@ RSpec.describe Prof::Environment::CloudFoundry do
           ssh_gateway_username: 'USERNAME',
           ssh_gateway_private_key: 'PRIVATE_KEY',
           bosh_service_broker_job_name: 'job_name',
-          bosh_manifest_path: 'manifest_path'
+          bosh_manifest_path: 'manifest_path',
+          broker_api_version: '2.13'
         )
 
         expect(cf.ssh_gateway).to be(gateway)
@@ -90,7 +93,8 @@ RSpec.describe Prof::Environment::CloudFoundry do
 
         cf = described_class.new(
           bosh_service_broker_job_name: 'job_name',
-          bosh_manifest_path: 'manifest_path'
+          bosh_manifest_path: 'manifest_path',
+          broker_api_version: '2.13'
         )
 
         expect(cf.bosh_director).to be(director)
@@ -113,7 +117,8 @@ RSpec.describe Prof::Environment::CloudFoundry do
         cf = described_class.new(
           bosh_service_broker_job_name: 'job_name',
           bosh_manifest_path: 'manifest_path',
-          bosh_ca_cert_path: 'certificate_path'
+          bosh_ca_cert_path: 'certificate_path',
+          broker_api_version: '2.13'
         )
 
         expect(cf.bosh_director).to be(director)
@@ -136,7 +141,8 @@ RSpec.describe Prof::Environment::CloudFoundry do
         cf = described_class.new(
           bosh_service_broker_job_name: 'job_name',
           bosh_manifest_path: 'manifest_path',
-          bosh_env_login: true
+          bosh_env_login: true,
+          broker_api_version: '2.13'
         )
 
         expect(cf.bosh_director).to be(director)
